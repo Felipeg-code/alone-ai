@@ -1067,3 +1067,14 @@ hr{border:0;border-top:1px solid #222}.empty-hint{color:#676767!important}.statu
 .proactive-attempt-add{flex:0 0 130px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:transparent!important;border:1.5px dashed #2d4f5a!important;border-radius:11px;color:#8fb0ba!important;cursor:pointer;font-size:12px;line-height:1.5;box-shadow:none!important;padding:8px}
 .proactive-attempt-add:hover{border-color:var(--accent)!important;color:#ffd0ad!important;background:rgba(255,122,26,.05)!important}
 .proactive-attempt-count{white-space:nowrap}
+
+/* v7.5.3 — Revisar: pergunta aprendida em destaque + edição em-lugar no card */
+.response-learned-main{min-width:0;flex:1}
+.learned-question{margin:0 0 6px;font-size:13.5px;line-height:1.5;color:#f2f6f7;font-weight:600}
+.response-inline-edit{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.response-inline-edit .response-inline-text{width:100%;min-height:64px;font-size:12.5px;line-height:1.5;resize:vertical;background:#0a1d24;border:1px solid #1d3b45;border-radius:9px;color:#dce7e9;padding:9px 11px;font-family:inherit}
+.response-inline-edit .response-inline-text:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 2px rgba(255,122,26,.15)}
+.response-inline-actions{display:flex;gap:7px;flex-wrap:wrap}
+.response-inline-actions button{font-size:11.5px;padding:7px 11px}
+.response-inline-actions .primary-action{background:rgba(255,122,26,.16)!important;border:1px solid rgba(255,122,26,.5)!important;color:#ffd0ad!important}
+.response-inline-actions .secondary{background:#102832!important;border:1px solid #2a4a54!important;color:#9db0b7!important}

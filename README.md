@@ -1,3 +1,11 @@
+# Alone.AI v7.5.3 — Revisar: pergunta aprendida em destaque e edição no próprio card
+
+- O card de itens "Revisar" mostra **qual mensagem foi aprendida**: a pergunta capturada do histórico aparece em destaque (ex.: ❓ "quanto custa o plano?") junto dos chips de data/confiança/evidências.
+- **Edição em-lugar:** cada card pendente tem um campo de resposta embutido — escreva a resposta ali mesmo, sem sair da lista. Botões: 💾 Salvar (mantém em Revisar), ✅ Salvar e aprovar (aprova e habilita; envio automático continua desligado) e Arquivar.
+- Aprovar sem escrever resposta é bloqueado com aviso claro; itens com texto real nascem com o campo pré-preenchido para edição rápida.
+- Digitar no campo não abre mais o editor lateral acidentalmente (cliques em campos são ignorados pelo seletor de card).
+- Novo `smoke-test-v753.js` com teste funcional do fluxo completo; suíte v7.4.4 → v7.5.3 (27 testes).
+
 # Alone.AI v7.5.2 — Follow-ups ilimitados e fim do texto técnico
 
 - **Proatividade com quantos follow-ups você quiser:** cada cenário (ex.: "Pediu preço e sumiu") agora tem uma sequência horizontal de tentativas — cards "Tentativa 1, 2, 3..." lado a lado, com botão ＋ para adicionar e ✕ para remover (renumeracao automática, até 20 por sanidade). O número de tentativas passa a ser a quantidade de mensagens configuradas — sem mais campo limitado a 5 nem textarea "uma por linha".
