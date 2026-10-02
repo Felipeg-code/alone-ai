@@ -1,3 +1,11 @@
+# Alone.AI v7.5.1 — Central de Respostas mais clara
+
+- Itens "Revisar" aprendidos do histórico exibem agora o rótulo **🧠 Mensagem aprendida** em vez do texto técnico antigo ("Resposta histórica disponível no corpus...").
+- O espaço ao lado da mensagem no card passou a ser usado: data de aprendizado, confiança e número de evidências aparecem em chips compactos.
+- Retrocompatível: itens já salvos com o placeholder antigo em instalações reais também são exibidos com o novo rótulo.
+- O editor da resposta orienta "substitua pelo texto real da resposta" ao abrir uma mensagem aprendida.
+- Novo `smoke-test-v751.js`; regressão completa v7.4.4 → v7.5.1 (25 testes).
+
 # Alone.AI v7.5.0 — Alone Shield
 
 Quarta etapa de segurança do WhatsApp: a camada **Alone Shield** fecha as brechas restantes de proteção anti-restrição com aquecimento de conta, higiene de conteúdo, orçamento real por cliente, detector de anomalia de volume, ritmo adaptativo, kill switch de emergência e classificação de conflito de sessão.

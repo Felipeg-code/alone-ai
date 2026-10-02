@@ -102,7 +102,7 @@ function localChunkFallback(messages=[]) {
   return {
     tone:toneSamples.length?[`Amostra local de ${toneSamples.length} respostas da empresa disponível para inferir estilo`]:[],
     phrases:toneSamples.slice(-6).map(x=>x.slice(0,160)), facts,
-    faq:questions.slice(0,8).map(q=>({question:q,answer:'Resposta histórica disponível no corpus; revisar antes de publicar como fato'})),
+    faq:questions.slice(0,8).map(q=>({question:q,answer:'Mensagem aprendida do histórico. Revise e escreva a resposta correta antes de aprovar.'})),
     processes:[], customer_profiles:[], routing:[],
     risks:['Fallback local utilizado porque o Gemini não produziu uma análise estruturada neste lote.'],
     fallback_local:true
