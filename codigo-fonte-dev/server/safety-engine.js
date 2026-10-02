@@ -3,6 +3,7 @@
 // Não tenta mascarar automação nem burlar mecanismos de detecção do WhatsApp.
 const db=require('./db');
 const ops=require('./ops');
+const shield=require('./shield');
 
 function clamp(n,min,max){return Math.max(min,Math.min(max,Number(n||0)));}
 function ageMs(ts){const t=new Date(ts||0).getTime();return Number.isFinite(t)?Date.now()-t:Infinity;}
@@ -35,8 +36,10 @@ function calculateHealth(settings={}){
   const failureRate=Math.max(0,Number(m.failedOutbound24h||0))/failBase;
   if(initiated>=5 && responseRate<.15){score-=22;reasons.push('Baixa taxa de resposta às iniciativas automáticas.');}
   else if(initiated>=5 && responseRate<.30){score-=10;reasons.push('Taxa de resposta às iniciativas automáticas abaixo do ideal.');}
-  if(optOutRate>=.10){score-=35;reasons.push('Taxa de opt-out elevada.');}
-  else if(optOutRate>=.05){score-=18;reasons.push('Opt-outs acima do padrão desejado.');}
+  // Amostra mínima de 5 iniciativas antes de penalizar opt-out: evita falso
+  // "caution" em instalação nova (1 opt-out manual / 1 envio = 100% é ruído).
+  if(initiated>=5 && optOutRate>=.10){score-=35;reasons.push('Taxa de opt-out elevada.');}
+  else if(initiated>=5 && optOutRate>=.05){score-=18;reasons.push('Opt-outs acima do padrão desejado.');}
   if(failureRate>=.15){score-=25;reasons.push('Muitas falhas recentes de outbound.');}
   else if(failureRate>=.05){score-=10;reasons.push('Existem falhas recentes de outbound.');}
   if(Number(r.dead||0)>0){score-=15;reasons.push('Há retries esgotados na fila.');}
@@ -74,7 +77,6 @@ function calculateHealth(settings={}){
   const daily=Number(m.automatedInitiations24h||0);
   const minGap=Math.max(0,Number(settings.safetyMinAutomatedGapSeconds||10));
   const lastAutoTs=m.lastAutomatedInitiationAt?new Date(m.lastAutomatedInitiationAt).getTime():0;
-  const gapRemainingSeconds=lastAutoTs&&minGap?Math.max(0,Math.ceil((minGap*1000-(Date.now()-lastAutoTs))/1000)):0;
 
   if(hourly>=baseHourly){score-=15;reasons.push('Volume automático na última hora atingiu o limite operacional.');}
   if(daily>=baseDaily){score-=20;reasons.push('Volume automático nas últimas 24 horas atingiu o teto global diário.');}
@@ -86,25 +88,41 @@ function calculateHealth(settings={}){
   let adaptiveFactor=1;
   if(level==='warning')adaptiveFactor=.5;
   if(recoveryProbation)adaptiveFactor=Math.min(adaptiveFactor,recoveryPct/100);
-  const effectiveHourly=Math.max(1,Math.floor(baseHourly*adaptiveFactor));
-  const effectiveDaily=Math.max(1,Math.floor(baseDaily*adaptiveFactor));
   const riskState=recentRestriction?'halted':recentRateLimit?'rate_limited':unstableTransport?'unstable':recoveryProbation?'recovery':level==='warning'?'caution':level==='critical'?'halted':'normal';
+
+  // Alone Shield v7.5.0 — aquecimento de conta, anomalia de volume e ritmo adaptativo.
+  const warmup=shield.warmupStatus(settings);
+  if(warmup.active){adaptiveFactor=Math.min(adaptiveFactor,warmup.factor);reasons.push(`Aquecimento da conta ativo: capacidade automática em ${Math.round(warmup.factor*100)}% (${warmup.daysRemaining}d restantes).`);}
+  const anomaly=shield.anomalyClamp({automatedInitiations24h:daily,automatedInitiations7d:initiated,baseDaily,settings});
+  if(anomaly.active)reasons.push(anomaly.reason);
+  const gapMultiplier=shield.adaptiveGapMultiplier(riskState);
+  const effectiveMinGap=Math.round(minGap*gapMultiplier);
+  const gapRemainingSeconds=lastAutoTs&&effectiveMinGap?Math.max(0,Math.ceil((effectiveMinGap*1000-(Date.now()-lastAutoTs))/1000)):0;
+
+  const effectiveHourly=Math.max(1,Math.floor(baseHourly*adaptiveFactor));
+  let effectiveDaily=Math.max(1,Math.floor(baseDaily*adaptiveFactor));
+  if(anomaly.active)effectiveDaily=Math.max(1,Math.min(effectiveDaily,anomaly.limit));
 
   return {
     score,level,riskState,reasons,recentRestriction,lastRestrictionAt,cooldownHours,recentRateLimit,lastRateLimitAt,rateLimitCooldownHours,
     recoveryProbation,probationHours,recoveryPct,unstableTransport,recentConnectionCloses:recentCloses.length,stormWindowMinutes,stormLimit,lastCompatibilityAt,
+    shield:{warmup,anomaly:{active:anomaly.active,limit:anomaly.limit,avgDaily:anomaly.avgDaily,spikeFactor:anomaly.spikeFactor},gapMultiplier},
     metrics:{...m,responseRate:Number(responseRate.toFixed(3)),optOutRate:Number(optOutRate.toFixed(3)),failureRate:Number(failureRate.toFixed(3)),retry:r,gapRemainingSeconds},
     thresholds:{warning:warn,circuitBreaker:trip},
-    limits:{hourly:effectiveHourly,daily:effectiveDaily,baseHourly,baseDaily,minGapSeconds:minGap,adaptiveFactor:Number(adaptiveFactor.toFixed(2))}
+    limits:{hourly:effectiveHourly,daily:effectiveDaily,baseHourly,baseDaily,minGapSeconds:effectiveMinGap,baseGapSeconds:minGap,adaptiveFactor:Number(adaptiveFactor.toFixed(2))}
   };
 }
-function evaluate({settings={},contact=null,kind='auto',source='',humanApproved=false}={}){
+function evaluate({settings={},contact=null,kind='auto',source='',humanApproved=false,text=''}={}){
   const protection=String(settings.accountProtectionMode||'strict').toLowerCase();
   const automationMode=String(settings.outboundAutomationMode||'approval').toLowerCase();
   const src=String(source||'').toLowerCase();
   const manual=kind==='manual'||src.startsWith('manual')||src.startsWith('quick');
   if(contact?.opted_out||contact?.consent_status==='opted_out')return {allowed:false,decision:'block',reason:'opted_out',protection,automationMode};
   if(manual)return {allowed:true,decision:'allow',reason:'human_initiated',protection,automationMode};
+  // Alone Shield: kill switch bloqueia TODO outbound automatizado, inclusive
+  // aprovações humanas pendentes. Envio manual digitado pelo humano continua.
+  const ks=shield.killSwitch();
+  if(ks.active)return {allowed:false,decision:'block',reason:'kill_switch',protection,automationMode,shield:{killSwitch:ks}};
   const recent=recentInbound(contact,Math.max(1,Number(settings.accountProtectionWindowHours||24)));
   if(kind==='ai_reply')return recent?{allowed:true,decision:'allow',reason:'recent_customer_message',protection,automationMode}:{allowed:false,decision:'block',reason:'outside_customer_window',protection,automationMode};
   if(protection==='strict')return {allowed:false,decision:'block',reason:'automated_initiation_blocked_strict',protection,automationMode};
@@ -114,6 +132,14 @@ function evaluate({settings={},contact=null,kind='auto',source='',humanApproved=
   if(kind==='campaign' && catStatus!=='opted_in')return {allowed:false,decision:'block',reason:'marketing_consent_missing',category,consent:catStatus,protection,automationMode};
   if(category==='reactivation' && catStatus!=='opted_in')return {allowed:false,decision:'block',reason:'reactivation_consent_missing',category,consent:catStatus,protection,automationMode};
   if(['proactive','journey'].includes(kind) && !recent && catStatus!=='opted_in')return {allowed:false,decision:'block',reason:'category_consent_missing',category,consent:catStatus,protection,automationMode};
+  // Alone Shield: orçamento por cliente — soma TODAS as iniciativas automáticas
+  // (campanha, proatividade, jornada e reativação) na janela configurada.
+  if(contact&&contact.id&&['campaign','proactive','journey'].includes(kind)){
+    const perContactWindowDays=Math.max(1,Number(settings.commercialContactWindowDays||7));
+    const perContactMax=Math.max(1,Number(settings.commercialContactLimit||10));
+    const used=db.countAllAutomatedInitiations(contact.id,perContactWindowDays);
+    if(used>=perContactMax)return {allowed:false,decision:'block',reason:'per_contact_limit',category,protection,automationMode,shield:{perContact:{used,max:perContactMax,windowDays:perContactWindowDays}}};
+  }
   const health=calculateHealth(settings);
   if(health.recentRestriction)return {allowed:false,decision:'block',reason:'restriction_cooldown',health,category,protection,automationMode};
   if(health.recentRateLimit)return {allowed:false,decision:'block',reason:'rate_limit_cooldown',health,category,protection,automationMode};
@@ -124,6 +150,12 @@ function evaluate({settings={},contact=null,kind='auto',source='',humanApproved=
   if(effectiveGap>0 && !src.includes('retry'))return {allowed:false,decision:'block',reason:'global_automation_interval',health,category,protection,automationMode,retryAfterSeconds:effectiveGap};
   const breaker=Boolean(settings.safetyCircuitBreakerEnabled!==false)&&health.score<=health.thresholds.circuitBreaker;
   if(breaker)return {allowed:false,decision:'block',reason:'circuit_breaker',health,category,protection,automationMode};
+  // Alone Shield: higiene de conteúdo — vale também para aprovação humana
+  // (ninguém aprova, mesmo sem querer, uma massa idêntica já disparada).
+  if(['campaign','proactive','journey'].includes(kind)&&String(text||'').trim()){
+    const content=shield.analyzeContent(text,{settings,ignoreContactId:contact?.id??null});
+    if(!content.ok)return {allowed:false,decision:'block',reason:'content_hygiene',health,category,protection,automationMode,content};
+  }
   if(humanApproved)return {allowed:true,decision:'allow',reason:'human_approved_after_revalidation',health,category,protection,automationMode};
   if(automationMode==='manual')return {allowed:false,decision:'approval',requiresApproval:true,reason:'manual_mode_requires_approval',health,category,protection,automationMode};
   if(automationMode==='approval')return {allowed:false,decision:'approval',requiresApproval:true,reason:'approval_required',health,category,protection,automationMode};
@@ -139,6 +171,9 @@ function classifyTransportError(err){
   const code=Number(err?.output?.statusCode||err?.statusCode||err?.status||err?.data?.status||err?.code||0);
   const message=String(err?.message||err||'');
   const msg=message.toLowerCase();
+  // Alone Shield: 409/conflict = outra sessão disputando o mesmo número.
+  // Reconexão automática aqui viraria briga de sessões — precisa de ação humana.
+  if(code===409||/conflict/.test(msg))return {kind:'conflict',code:code||null,message};
   if(code===405||/client[_\s-]?too[_\s-]?old|client.*version|protocol.*version|incompatible.*version/.test(msg))return {kind:'compatibility',code:code||null,message};
   if(code===429||/rate.?limit|too many requests|throttl/.test(msg))return {kind:'rate_limit',code:code||null,message};
   if(code===401||/logged.?out|session.*invalid|auth.*fail|unauthenticated/.test(msg))return {kind:'auth',code:code||null,message};
@@ -156,6 +191,7 @@ function recordTransportError(err,details={}){
   if(c.kind==='restriction')auditOnce('whatsapp_restriction_suspected',base,60000);
   else if(c.kind==='rate_limit')auditOnce('whatsapp_rate_limited',base,60000);
   else if(c.kind==='compatibility')auditOnce('whatsapp_protocol_incompatible',base,60000);
+  else if(c.kind==='conflict')auditOnce('whatsapp_session_conflict',base,60000);
   else if(c.kind==='auth')auditOnce('whatsapp_auth_failure',base,60000);
   else if(c.kind==='transient')auditOnce('whatsapp_transport_transient',base,30000);
   return c;

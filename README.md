@@ -1,3 +1,22 @@
+# Alone.AI v7.5.0 — Alone Shield
+
+Quarta etapa de segurança do WhatsApp: a camada **Alone Shield** fecha as brechas restantes de proteção anti-restrição com aquecimento de conta, higiene de conteúdo, orçamento real por cliente, detector de anomalia de volume, ritmo adaptativo, kill switch de emergência e classificação de conflito de sessão.
+
+## Alone Shield — novo nesta versão
+
+- **Aquecimento de conta (Warmup):** conexão recém-conectada opera com 10% da capacidade automática, liberando linearmente até 100% em 7 dias (configurável). Volume alto em conta nova é o gatilho clássico de restrição.
+- **Higiene de conteúdo:** mensagem quase idêntica enviada a 5+ contatos em 24h é bloqueada antes do envio (similaridade por shingles — mensagens personalizadas com {nome} passam naturalmente). Excesso de links e domínios bloqueados pela política também barram; gritos/emoji flood geram aviso.
+- **Orçamento por cliente (real):** soma campanha + proatividade + jornada + reativação na janela configurada (padrão 10 em 7 dias) — antes só duas categorias contavam.
+- **Detector de anomalia:** pico de volume acima de 3x a média diária dos últimos 7 dias reduz temporariamente o limite diário para a banda histórica (padrão de conta invadida).
+- **Ritmo adaptativo:** em estado `caution` o intervalo global mínimo cresce 1,5x; em `recovery`, 2x — desacelera antes de bloquear.
+- **Kill switch:** botão de pânico persistido que bloqueia TODO outbound automatizado (inclusive aprovações pendentes, que ficam preservadas) até ser desativado. Envios manuais humanos continuam.
+- **Conflito de sessão (409):** outra sessão usando o mesmo número suspende a reconexão automática em vez de iniciar disputa de sessões.
+- **Robustez do score:** taxa de opt-out agora exige amostra mínima de 5 iniciativas (igual à taxa de resposta), evitando falso estado de atenção em instalações novas.
+- **Painel:** card Shield no Safety Engine com status de aquecimento, higiene, anomalia, conflito e botão de kill switch.
+- **Smoke v7.5.0** + regressão completa v7.4.4 → v7.5.0.
+
+> Importante: o transporte atual continua sendo WhatsApp Web via Baileys. Nenhuma camada local garante risco zero em integração não oficial. O Shield reduz as causas evitáveis; para risco estrutural mínimo, migre para a WhatsApp Business Platform/Cloud API (a abstração `messaging-provider` já está pronta para isso). O Alone Shield não implementa técnicas de evasão de detecção (fingerprint, proxy, mutação de texto) — por princípio e porque não funcionam a longo prazo.
+
 # Alone.AI v7.4.33 — Adaptive Risk Control
 
 Terceira etapa de segurança do WhatsApp: controle de risco adaptativo, recuperação gradual, detecção de instabilidade, classificação fina de erros e trava atômica de outbound.

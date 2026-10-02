@@ -123,6 +123,17 @@
           <label>Capacidade na recuperação (%)<input id="safetyRecoveryLimitPercent" type="number" min="10" max="100" value="25"></label>
         </div>
         <label class="switch-row"><input id="safetyCircuitBreakerEnabled" type="checkbox" checked><span>Ativar circuit breaker automático</span></label>
+        <div class="shield-box">
+          <div class="shield-header"><strong>🛡️ Alone Shield — proteção anti-restrição</strong><span id="shieldKillSwitchState" class="badge">kill switch: --</span></div>
+          <p class="hint">Aquecimento de conta nova, higiene de conteúdo (bloqueia massa idêntica), ritmo adaptativo, orçamento por cliente e detector de anomalia. Não usa técnicas de evasão — reduz as causas evitáveis de restrição.</p>
+          <div class="shield-badges">
+            <span id="shieldWarmupBadge" class="badge">Aquecimento: --</span>
+            <span id="shieldContentGuardBadge" class="badge">Higiene de conteúdo: --</span>
+            <span id="shieldAnomalyBadge" class="badge">Anomalia: --</span>
+            <span id="shieldConflictBadge" class="badge">Conflito de sessão: --</span>
+          </div>
+          <div class="chat-actions"><button id="shieldKillSwitchBtn" class="secondary">🛑 Ativar kill switch</button></div>
+        </div>
         <div class="chat-actions"><button id="saveSafetyEngineBtn">💾 Salvar Safety Engine</button><button id="refreshSafetyEngineBtn" class="secondary">↻ Atualizar saúde</button></div>
         <details class="safety-approval-box" open><summary>Mensagens aguardando aprovação humana <span id="safetyApprovalCount" class="badge">0</span></summary><div id="safetyApprovalList" class="safety-approval-list"><p class="hint">Nenhuma mensagem pendente.</p></div></details>
       </div>

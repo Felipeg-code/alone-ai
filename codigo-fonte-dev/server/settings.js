@@ -29,6 +29,7 @@ const DEFAULTS = {
   continuousLearningRuns: 0, continuousLearningFailures: 0, continuousLearningLastDurationMs: 0, continuousLearningLastProfiled: 0, continuousLearningLastKnowledgeDelta: 0, continuousLearningLastError: '',
   knowledgeGapDetection: true, browserNotifications: true,
   accountProtectionMode:'strict', accountProtectionWindowHours:24, outboundAutomationMode:'approval', safetyHealthEnabled:true, safetyCircuitBreakerEnabled:true, safetyCircuitBreakerThreshold:45, safetyWarningThreshold:70, safetyMaxAutomatedInitiationsPerHour:20, safetyMaxAutomatedInitiationsPerDay:40, safetyRestrictionCooldownHours:48, safetyRateLimitCooldownHours:6, safetyRateLimitReconnectMinutes:30, safetyRecoveryProbationHours:24, safetyRecoveryLimitPercent:25, safetyReconnectStormWindowMinutes:15, safetyReconnectStormLimit:4, safetyApprovalMaxAgeHours:24, safetyMinAutomatedGapSeconds:10,
+  shieldWarmupEnabled:true, shieldWarmupDays:7, shieldWarmupFloorPercent:10, shieldContentGuardEnabled:true, shieldDuplicateWindowHours:24, shieldDuplicateContactThreshold:5, shieldDuplicateSimilarity:0.85, shieldLinkLimit:2, shieldBlockedLinkPatterns: [], shieldAnomalySpikeFactor:3,
   prospectingEnabled: false, prospectingMinIntervalSeconds: 180, prospectingGlobalDailyLimit: 30,
   prospectingStartHour: 8, prospectingEndHour: 20, reactivationCampaignEnabled:false, prospectingOptOutKeywords: ['sair','parar','não quero','nao quero','remover','cancelar mensagens'],
   proactiveEnabled: false, proactiveUserPreferenceSet:false,
@@ -183,6 +184,16 @@ function saveSettings(partial) {
   if(Object.prototype.hasOwnProperty.call(clean,'safetyReconnectStormLimit'))clean.safetyReconnectStormLimit=Math.max(2,Math.min(20,Number(clean.safetyReconnectStormLimit||4)));
   if(Object.prototype.hasOwnProperty.call(clean,'safetyApprovalMaxAgeHours'))clean.safetyApprovalMaxAgeHours=Math.max(1,Math.min(168,Number(clean.safetyApprovalMaxAgeHours||24)));
   if(Object.prototype.hasOwnProperty.call(clean,'safetyMinAutomatedGapSeconds'))clean.safetyMinAutomatedGapSeconds=Math.max(0,Math.min(3600,Number(clean.safetyMinAutomatedGapSeconds||10)));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldWarmupEnabled'))clean.shieldWarmupEnabled=clean.shieldWarmupEnabled!==false;
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldWarmupDays'))clean.shieldWarmupDays=Math.max(1,Math.min(30,Math.round(Number(clean.shieldWarmupDays||7))));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldWarmupFloorPercent'))clean.shieldWarmupFloorPercent=Math.max(5,Math.min(100,Number(clean.shieldWarmupFloorPercent||10)));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldContentGuardEnabled'))clean.shieldContentGuardEnabled=clean.shieldContentGuardEnabled!==false;
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldDuplicateWindowHours'))clean.shieldDuplicateWindowHours=Math.max(1,Math.min(168,Number(clean.shieldDuplicateWindowHours||24)));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldDuplicateContactThreshold'))clean.shieldDuplicateContactThreshold=Math.max(2,Math.min(500,Math.round(Number(clean.shieldDuplicateContactThreshold||5))));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldDuplicateSimilarity'))clean.shieldDuplicateSimilarity=Math.max(0.5,Math.min(1,Number(clean.shieldDuplicateSimilarity||0.85)));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldLinkLimit'))clean.shieldLinkLimit=Math.max(0,Math.min(10,Math.round(Number(clean.shieldLinkLimit||2))));
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldBlockedLinkPatterns'))clean.shieldBlockedLinkPatterns=(Array.isArray(clean.shieldBlockedLinkPatterns)?clean.shieldBlockedLinkPatterns:[]).map(x=>String(x||'').trim().slice(0,120)).filter(Boolean).slice(0,50);
+  if(Object.prototype.hasOwnProperty.call(clean,'shieldAnomalySpikeFactor'))clean.shieldAnomalySpikeFactor=Math.max(1.5,Math.min(10,Number(clean.shieldAnomalySpikeFactor||3)));
   clean.settingsUpdatedAt=new Date().toISOString();
   clean.settingsRevision=Number(currentFile.settingsRevision||0)+1;
   if (clean.geminiModel && RETIRED_GEMINI_MODELS.has(String(clean.geminiModel).trim())) clean.geminiModel='gemini-3.8-flash';

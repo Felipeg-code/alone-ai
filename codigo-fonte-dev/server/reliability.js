@@ -21,10 +21,10 @@ async function processRetryQueue(){
           const retryText=String(p.text||'');
           const src=String(p.source||'');
           let kind='manual'; if(src.startsWith('proatividade'))kind='proactive'; else if(src.startsWith('jornada'))kind='journey'; else if(src.startsWith('prospeccao'))kind='campaign'; else if(src.startsWith('ia_'))kind='ai_reply';
-          const policy=outboundPolicy.check({settings:loadSettings(),contact:db.getContactById(contact.id),kind,source:src});
+          const policy=outboundPolicy.check({settings:loadSettings(),contact:db.getContactById(contact.id),kind,source:src,text:retryText});
           if(!policy.allowed){
             if(policy.requiresApproval){ops.enqueueOutboundApproval({kind,contactId:contact.id,text:retryText,source:src,category:policy.category,reason:policy.reason,uniqueKey:`retry-approval:${job.id}`,meta:{retryId:job.id,proactiveScenario:p.proactiveScenario||'',proactiveAttempt:p.proactiveAttempt||0,journeyStage:p.journeyStage||'',prospectQueueId:p.prospectQueueId||null,agentId:p.agentId||null}});ops.completeRetry(job.id);ops.audit('retry_moved_to_approval',{agentId:p.agentId,contactId:contact.id,resource:'retry',resourceId:job.id,details:{kind,source:src}});return {ok:false,id:job.id,reason:'approval_required',movedToApproval:true};}
-            if(['restriction_cooldown','rate_limit_cooldown','transport_unstable','hourly_automation_limit','daily_automation_limit','global_automation_interval','circuit_breaker'].includes(policy.reason)){
+            if(['restriction_cooldown','rate_limit_cooldown','transport_unstable','hourly_automation_limit','daily_automation_limit','global_automation_interval','circuit_breaker','kill_switch'].includes(policy.reason)){
               const delay=policy.reason==='global_automation_interval'?Math.max(1,Math.ceil(Number(policy.retryAfterSeconds||60)/60)):policy.reason==='rate_limit_cooldown'?60:15;
               ops.deferRetry(job.id,delay,`Safety Engine: ${policy.reason}`);
               ops.audit('retry_deferred_by_safety',{agentId:p.agentId,contactId:contact.id,resource:'retry',resourceId:job.id,details:{kind,source:src,reason:policy.reason,delayMinutes:delay}});

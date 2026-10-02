@@ -525,6 +525,8 @@ async function startWhatsApp(onStatusChange) {
     const { connection, lastDisconnect, qr } = update;
     if (qr) { historySyncCompleted=false; lastHistoryBatchAt=0; onboarding.resetForNewConnection(); connectionError=null; lastQR = await QRCode.toDataURL(qr); connectionStatus='aguardando_qr'; statusCallback?.(connectionStatus,lastQR); console.log('📲 QR Code do WhatsApp gerado.'); }
     if (connection === 'open') { connectionStatus='conectado'; connectionError=null; connectedAt=new Date().toISOString(); lastQR=null; reconnecting=false; reconnectAttempts=0; if(reconnectTimer){clearTimeout(reconnectTimer);reconnectTimer=null;} statusCallback?.(connectionStatus,null); console.log('✅ WhatsApp conectado! Preparando histórico e IA...');
+      // Alone Shield: marca a abertura de conexão — base do aquecimento de conta.
+      try{ops.audit('whatsapp_connection_open',{resource:'whatsapp',details:{connectedAt}});}catch(_){}
       if (connectionBootstrapTimer) clearTimeout(connectionBootstrapTimer);
       // Fallback: algumas contas não emitem um marcador final confiável de histórico.
       connectionBootstrapTimer=setTimeout(()=>scheduleBootstrap(800,false),15000);
@@ -540,7 +542,11 @@ async function startWhatsApp(onStatusChange) {
       const restrictionSuspected=cls.kind==='restriction';
       const authFailure=cls.kind==='auth'||Number(code)===Number(DisconnectReason.loggedOut);
       const rateLimited=cls.kind==='rate_limit';
-      const shouldReconnect = !manualDisconnect && !restrictionSuspected && !authFailure && !rateLimited;
+      // Alone Shield: conflito (409) significa outra sessão ativa no mesmo número.
+      // Reconectar automaticamente iniciaria uma disputa de sessões — clássico
+      // gatilho de instabilidade e bloqueio. Exige intervenção humana.
+      const sessionConflict=cls.kind==='conflict';
+      const shouldReconnect = !manualDisconnect && !restrictionSuspected && !authFailure && !rateLimited && !sessionConflict;
       connectionError={code,message,at:new Date().toISOString(),classification:cls.kind,restrictionSuspected};
       sock=null; connectedAt=null;
       if (shouldReconnect) {
@@ -559,8 +565,9 @@ async function startWhatsApp(onStatusChange) {
         reconnectTimer=setTimeout(()=>{reconnectTimer=null;reconnecting=false;startWhatsApp(statusCallback).catch(()=>{});},mins*60000);
         console.error(`⏸️ Rate limit detectado. Reconexão adiada por ${mins} min.`);
       } else {
-        connectionStatus=restrictionSuspected?'restrito':'desconectado'; statusCallback?.(connectionStatus,null); onboarding.markWaitingForWhatsApp({preserveReady:true});
+        connectionStatus=restrictionSuspected?'restrito':sessionConflict?'conflito':'desconectado'; statusCallback?.(connectionStatus,null); onboarding.markWaitingForWhatsApp({preserveReady:true});
         if(restrictionSuspected) console.error('⛔ Possível restrição do WhatsApp. Reconexão automática suspensa.',code||'',message);
+        else if(sessionConflict) console.error('⚔️ Conflito de sessão detectado (outra conexão usando este número). Reconexão automática suspensa — verifique se o WhatsApp Web/Alone está aberto em outro lugar.',code||'',message);
         else if(authFailure) console.log('❌ Sessão/autenticação do WhatsApp encerrada.', code || '', message);
         else console.log('❌ Sessão do WhatsApp encerrada.', code || '', message);
       }

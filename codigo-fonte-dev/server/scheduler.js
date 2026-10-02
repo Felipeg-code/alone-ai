@@ -69,10 +69,11 @@ function startScheduler() {
         }
         continue;
       }
+      const reactivationText=(flow.responses||[]).map(r=>r?.text||'').filter(Boolean).join(' | ');
       const reactivation=await safetyEngine.withAutomationLock(async()=>{
         const fresh=db.getContactById(contact.id);
         const currentSettings=settingsStore.loadSettings();
-        const recheck=outboundPolicy.check({settings:currentSettings,contact:fresh,kind:'proactive',source:'reativacao:agendada'});
+        const recheck=outboundPolicy.check({settings:currentSettings,contact:fresh,kind:'proactive',source:'reativacao:agendada',text:reactivationText});
         if(!recheck.allowed)return {sent:false,reason:recheck.reason};
         try {
           let delivered=0;

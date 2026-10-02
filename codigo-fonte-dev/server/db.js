@@ -102,6 +102,16 @@ function customerMemoryPrompt(contact){
 }
 function countAutomatedInitiations(contactId,days=7){const cutoff=Date.now()-Math.max(1,Number(days||7))*86400000;return state.activities.filter(a=>Number(a.contact_id)===Number(contactId)&&['proactive_followup_sent','journey_followup_sent'].includes(a.type)&&new Date(a.created_at).getTime()>=cutoff).length;}
 
+// Alone Shield v7.5.0 — orçamento por cliente somando TODAS as iniciativas
+// automáticas (prospecção, proatividade, jornada e reativação), não só duas.
+const AUTOMATED_INITIATION_TYPES=['proactive_followup_sent','journey_followup_sent','prospect_sent','reactivation_sent'];
+function countAllAutomatedInitiations(contactId,days=7){const cutoff=Date.now()-Math.max(1,Number(days||7))*86400000;return state.activities.filter(a=>Number(a.contact_id)===Number(contactId)&&AUTOMATED_INITIATION_TYPES.includes(String(a.type||''))&&new Date(a.created_at).getTime()>=cutoff).length;}
+
+// Alone Shield v7.5.0 — textos de outbound automatizado recentes (para detecção
+// de massa quase idêntica). Fonte de automação vem no campo flow_matched do log.
+const AUTOMATED_OUTBOUND_SOURCE_RE=/^(prospecc|proatividade|jornada|reativacao|aprovado:(prospecc|proatividade|jornada|reativacao))/i;
+function listRecentAutomatedOutbound(hours=24,limit=500){const cutoff=Date.now()-Math.max(1,Number(hours||24))*3600000;return state.messages.filter(m=>m.direction==='out'&&!m.is_historical&&new Date(m.created_at).getTime()>=cutoff&&AUTOMATED_OUTBOUND_SOURCE_RE.test(String(m.flow_matched||''))).slice(-Math.max(1,Number(limit||500)));}
+
 function migrate(raw) {
   const state = raw && typeof raw === 'object' ? raw : emptyDB();
   state.schemaVersion = 10;
@@ -894,5 +904,5 @@ module.exports = {
   setAISuggestion, clearAllAISuggestions, recordAIFeedback, updateMessageBody, searchGlobal, listKnowledgeGaps, undoLastContactAction, teamPerformance, serviceMetrics, segmentContacts, proactiveScenarioForContact, getProactiveCandidates, markProactiveSent, countProactiveSendsToday, getLastProactiveSendAt,
   beginBatch, endBatch, runBatch, flush, messageExists, getStorageStatus, repairHistoricalContactMetadata,
   applyRealtimeMessageSignals, subscribeRealtime, emitRealtime, getSafetyMetrics,
-  getCustomerMemory, updateCustomerMemory, appendCustomerMemoryEvent, customerMemoryPrompt, countAutomatedInitiations,
+  getCustomerMemory, updateCustomerMemory, appendCustomerMemoryEvent, customerMemoryPrompt, countAutomatedInitiations, countAllAutomatedInitiations, listRecentAutomatedOutbound,
 };

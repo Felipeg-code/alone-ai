@@ -66,14 +66,14 @@ async function processProactiveFollowups({segment=null,contactIds=null}={}){
       const msgs=Array.isArray(rule.messages)?rule.messages:[];
       const text=render(msgs[Math.min(attempt,msgs.length-1)]||msgs[0]||'',contact);
       if(!text)continue;
-      const policy=outboundPolicy.check({settings,contact,kind:'proactive',source:`proatividade:${key}`});
+      const policy=outboundPolicy.check({settings,contact,kind:'proactive',source:`proatividade:${key}`,text});
       if(!policy.allowed){
         if(policy.requiresApproval){ops.enqueueOutboundApproval({kind:'proactive',contactId:contact.id,text,source:`proatividade:${key}`,category:policy.category,reason:policy.reason,uniqueKey:`proactive:${contact.id}:${key}:${attempt+1}:${contact.last_outbound_at||''}`,meta:{scenario:key,attempt:attempt+1}});return {ok:false,reason:'approval_required',contactId:contact.id,scenario:key,diagnostics:diagnostics(settings,segment)};}
         continue;
       }
       return await safetyEngine.withAutomationLock(async()=>{
         const fresh=db.getContactById(contact.id);
-        const recheck=outboundPolicy.check({settings:loadSettings(),contact:fresh,kind:'proactive',source:`proatividade:${key}`});
+        const recheck=outboundPolicy.check({settings:loadSettings(),contact:fresh,kind:'proactive',source:`proatividade:${key}`,text});
         if(!recheck.allowed)return {ok:false,reason:recheck.reason,contactId:fresh?.id||contact.id,scenario:key,diagnostics:diagnostics(loadSettings(),segment)};
         try{
           await sendManualMessage(fresh.phone,text);

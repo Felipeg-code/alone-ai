@@ -18,6 +18,7 @@ const onboarding = require('./onboarding');
 const ops = require('./ops');
 const { processRetryQueue } = require('./reliability');
 const safetyEngine = require('./safety-engine');
+const shield = require('./shield');
 const outboundPolicy = require('./outbound-policy');
 const messagingProvider = require('./messaging-provider');
 const { publicDir, dataDir, isPackaged, baseDir } = require('./paths');
@@ -175,7 +176,8 @@ app.get('/api/health', (_req,res)=>{
   const safety=safetyEngine.calculateHealth(st);
   res.json({...snapshot,safety:{...safety,automationMode:st.outboundAutomationMode||'approval',accountProtectionMode:st.accountProtectionMode||'strict',approvals:ops.approvalMetrics()},bootstrap:{status:boot.status,phase:boot.phase,percent:boot.percent,ready:boot.ready,error:boot.error,current:boot.current,last_update_at:boot.lastUpdateAt,quality:st.aiBootstrapQuality||'',has_style_profile:Boolean(String(st.learnedStyleProfile||'').trim()),has_business_profile:Boolean(String(st.learnedBusinessProfile||'').trim()),profiled_contacts:Number(st.aiBootstrapProfiledContacts||0),sampled_messages:Number(st.aiBootstrapSampledMessages||0),diagnostics:st.aiBootstrapDiagnostics||{}},whatsapp_error:wa.error||null});
 });
-app.get('/api/safety/status', requireCapability('canSeeDashboard'), (_req,res)=>{const st=settings.loadSettings();const health=safetyEngine.calculateHealth(st);res.json({...health,automationMode:st.outboundAutomationMode||'approval',accountProtectionMode:st.accountProtectionMode||'strict',approvals:ops.approvalMetrics(),provider:messagingProvider.providerInfo(),whatsapp:getStatus()});});
+app.get('/api/safety/status', requireCapability('canSeeDashboard'), (_req,res)=>{const st=settings.loadSettings();const health=safetyEngine.calculateHealth(st);res.json({...health,automationMode:st.outboundAutomationMode||'approval',accountProtectionMode:st.accountProtectionMode||'strict',approvals:ops.approvalMetrics(),provider:messagingProvider.providerInfo(),whatsapp:getStatus(),shieldRuntime:shield.snapshot(st)});});
+app.post('/api/shield/kill-switch', requireManager, (req,res)=>{const active=Boolean(req.body&&req.body.active);const row=shield.setKillSwitch(active,{reason:(req.body&&req.body.reason)||'',agentId:req.agent.id});res.json({ok:true,killSwitch:row,shieldRuntime:shield.snapshot(settings.loadSettings())});});
 app.get('/api/safety/approvals', requireCapability('canSeeDashboard'), (req,res)=>res.json(ops.listOutboundApprovals({status:req.query.status||'pending',limit:req.query.limit||300})));
 app.post('/api/safety/approvals/:id/reject', requireManager, (req,res)=>{const row=ops.resolveOutboundApproval(req.params.id,'rejected',req.agent.id,req.body.note||'');if(!row)return res.status(404).json({error:'Aprovação não encontrada'});res.json(row);});
 app.post('/api/safety/approvals/:id/approve', requireManager, async (req,res)=>{
@@ -196,8 +198,11 @@ app.post('/api/safety/approvals/:id/approve', requireManager, async (req,res)=>{
     if(!fresh)return {ok:false,status:404,error:'Contato não encontrado'};
     const duplicateNow=db.getContactMessages(fresh.id,true).some(m=>m.direction==='out'&&String(m.body||'').trim()===String(currentApproval.text||'').trim()&&new Date(m.created_at).getTime()>=new Date(currentApproval.created_at).getTime());
     if(duplicateNow){ops.resolveOutboundApproval(currentApproval.id,'cancelled',req.agent.id,'Mensagem já enviada por outro fluxo');return {ok:true,id:currentApproval.id,contactId:fresh.id,alreadySent:true};}
-    const recheck=outboundPolicy.check({settings:settings.loadSettings(),contact:fresh,kind:currentApproval.kind,source:currentApproval.source,humanApproved:true});
+    const recheck=outboundPolicy.check({settings:settings.loadSettings(),contact:fresh,kind:currentApproval.kind,source:currentApproval.source,humanApproved:true,text:currentApproval.text});
     if(!recheck.allowed){
+      // Alone Shield: kill switch não cancela a aprovação — ela fica pendente
+      // para ser decidida depois que o pânico passar.
+      if(recheck.reason==='kill_switch')return {ok:false,status:423,reason:'kill_switch',safety:null};
       ops.resolveOutboundApproval(row.id,'cancelled',req.agent.id,`Bloqueado na revalidação de segurança: ${recheck.reason}`);
       return {ok:false,status:409,reason:recheck.reason,safety:recheck.health||null};
     }

@@ -66,16 +66,16 @@ async function processProspectingQueue(campaignId=null) {
 
         const text = renderTemplate(campaign.initial_message, contact);
         if (!text) { db.markProspectSkipped(item.id, 'Mensagem inicial vazia'); continue; }
-        const policy=outboundPolicy.check({settings,contact,kind:'campaign',source:`prospeccao:${campaign.id}`});
+        const policy=outboundPolicy.check({settings,contact,kind:'campaign',source:`prospeccao:${campaign.id}`,text});
         if(!policy.allowed){
           if(policy.requiresApproval){ops.enqueueOutboundApproval({kind:'campaign',contactId:contact.id,text,source:`prospeccao:${campaign.id}`,category:policy.category,reason:policy.reason,uniqueKey:`campaign:${campaign.id}:${item.id}`,meta:{campaignId:campaign.id,prospectQueueId:item.id,stage:campaign.stage,agentId:campaign.created_by_agent_id}});return {ok:false,reason:'approval_required',campaignId:campaign.id,contactId:contact.id,queueId:item.id,diagnostics:getProspectingDiagnostics(settings)};}
-          if(['marketing_consent_missing','opted_out','category_consent_missing'].includes(policy.reason)){db.markProspectSkipped(item.id,policy.reason);continue;}
+          if(['marketing_consent_missing','opted_out','category_consent_missing','per_contact_limit','content_hygiene'].includes(policy.reason)){db.markProspectSkipped(item.id,policy.reason);continue;}
           return {ok:false,reason:policy.reason,campaignId:campaign.id,contactId:contact.id,diagnostics:getProspectingDiagnostics(settings)};
         }
         return await safetyEngine.withAutomationLock(async()=>{
           const fresh=db.getContactById(contact.id);
-          const recheck=outboundPolicy.check({settings:settingsStore.loadSettings(),contact:fresh,kind:'campaign',source:`prospeccao:${campaign.id}`});
-          if(!recheck.allowed)return {ok:false,reason:recheck.reason,campaignId:campaign.id,contactId:contact.id,queueId:item.id,diagnostics:getProspectingDiagnostics(settingsStore.loadSettings())};
+          const recheck=outboundPolicy.check({settings:settingsStore.loadSettings(),contact:fresh,kind:'campaign',source:`prospeccao:${campaign.id}`,text});
+          if(!recheck.allowed){if(['per_contact_limit','content_hygiene'].includes(recheck.reason)){db.markProspectSkipped(item.id,recheck.reason);return {ok:false,reason:recheck.reason,campaignId:campaign.id,contactId:contact.id,queueId:item.id,skipped:true,diagnostics:getProspectingDiagnostics(settingsStore.loadSettings())};}return {ok:false,reason:recheck.reason,campaignId:campaign.id,contactId:contact.id,queueId:item.id,diagnostics:getProspectingDiagnostics(settingsStore.loadSettings())};}
           db.markProspectSending(item.id);
           try {
             await sendManualMessage(fresh.phone, text);

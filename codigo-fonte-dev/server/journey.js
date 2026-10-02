@@ -24,14 +24,14 @@ async function processJourneyFollowups() {
     const rule = settings.journeyAutomations?.[contact.journey_stage];
     if (!rule) continue;
     const text = render(rule.message, contact); if (!text) continue;
-    const policy=outboundPolicy.check({settings,contact,kind:'journey',source:`jornada:${contact.journey_stage}`});
+    const policy=outboundPolicy.check({settings,contact,kind:'journey',source:`jornada:${contact.journey_stage}`,text});
     if(!policy.allowed){
       if(policy.requiresApproval) ops.enqueueOutboundApproval({kind:'journey',contactId:contact.id,text,source:`jornada:${contact.journey_stage}`,category:policy.category,reason:policy.reason,uniqueKey:`journey:${contact.id}:${contact.journey_stage}:${contact.journey_updated_at||''}`,meta:{journeyStage:contact.journey_stage}});
       continue;
     }
     const result=await safetyEngine.withAutomationLock(async()=>{
       const fresh=db.getContactById(contact.id);
-      const recheck=outboundPolicy.check({settings:loadSettings(),contact:fresh,kind:'journey',source:`jornada:${contact.journey_stage}`});
+      const recheck=outboundPolicy.check({settings:loadSettings(),contact:fresh,kind:'journey',source:`jornada:${contact.journey_stage}`,text});
       if(!recheck.allowed)return {sent:false,reason:recheck.reason};
       try {
         await sendManualMessage(fresh.phone, text);

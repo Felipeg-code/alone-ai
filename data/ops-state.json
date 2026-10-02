@@ -53,5 +53,13 @@
   "lastBackupAt": null,
   "lastBackupPath": null,
   "outboundApprovals": [],
-  "nextApprovalId": 1
+  "nextApprovalId": 1,
+  "shield": {
+    "killSwitch": {
+      "active": false,
+      "reason": "",
+      "at": null,
+      "by": null
+    }
+  }
 }
