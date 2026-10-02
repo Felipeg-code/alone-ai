@@ -1,0 +1,20 @@
+const fs=require('fs');const path=require('path');
+const root=path.resolve(__dirname,'../codigo-fonte-dev');
+const safety=require(path.join(root,'server/safety-engine'));
+function assert(c,m){if(!c)throw new Error(m);}
+assert(safety.categoryFor('campaign','reativacao:agendada')==='reactivation','reativação deve ter categoria própria');
+assert(safety.categoryFor('campaign','prospeccao:1')==='marketing','prospecção deve ser marketing');
+assert(safety.classifyTransportError(Object.assign(new Error('rate limit'),{status:429})).kind==='rate_limit','429 deve ser rate_limit');
+assert(safety.classifyTransportError(Object.assign(new Error('bad request'),{status:400})).kind==='permanent','400 deve ser permanente');
+const opted={id:999,opted_out:1,consent_status:'opted_out'};
+const manual=safety.evaluate({settings:{accountProtectionMode:'off'},contact:opted,kind:'manual',source:'manual'});
+assert(!manual.allowed&&manual.reason==='opted_out','manual não pode furar opt-out');
+const react=safety.evaluate({settings:{accountProtectionMode:'off',outboundAutomationMode:'automatic',safetyMinAutomatedGapSeconds:0},contact:{id:998,opted_out:0,consent_status:'opted_in',consent_categories:{reactivation:'unknown'}},kind:'proactive',source:'reativacao:agendada'});
+assert(!react.allowed&&react.reason==='reactivation_consent_missing','reativação exige consentimento específico');
+const scheduler=fs.readFileSync(path.join(root,'server/scheduler.js'),'utf8');
+assert(scheduler.includes("outboundPolicy.check({settings,contact,kind:'proactive',source:'reativacao:agendada'})"),'reativação deve passar pela política');
+const index=fs.readFileSync(path.join(root,'server/index.js'),'utf8');
+assert(index.includes('blockIfOptedOut'),'rotas manuais precisam de guarda de opt-out');
+const provider=fs.readFileSync(path.join(root,'server/messaging-provider.js'),'utf8');
+assert(provider.includes('transportTail'),'transporte deve ser serializado');
+console.log('Smoke v7.4.32 OK',{reactivationCategory:true,optoutManualGuard:true,restrictionClassifier:true,transportSerialized:true});

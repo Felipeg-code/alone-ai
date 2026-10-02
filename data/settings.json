@@ -1,0 +1,251 @@
+{
+  "themeColor": "#FF6A00",
+  "gymName": "Sua empresa",
+  "businessTimezone": "America/Sao_Paulo",
+  "businessHours": "Dom 9h-12h / Seg 6:30-11:30 e 14:30-21:30 / Ter 6:30-11:30 e 14:30-21:30 / Qua 6:30-11:30 e 14:30-21:30 / Qui 6:30-11:30 e 14:30-21:30 / Sex 6:30-11:30 e 14:30-21:30 / Sáb 8:30-12:30",
+  "businessSchedule": {
+    "0": [
+      [
+        540,
+        720
+      ]
+    ],
+    "1": [
+      [
+        390,
+        690
+      ],
+      [
+        870,
+        1290
+      ]
+    ],
+    "2": [
+      [
+        390,
+        690
+      ],
+      [
+        870,
+        1290
+      ]
+    ],
+    "3": [
+      [
+        390,
+        690
+      ],
+      [
+        870,
+        1290
+      ]
+    ],
+    "4": [
+      [
+        390,
+        690
+      ],
+      [
+        870,
+        1290
+      ]
+    ],
+    "5": [
+      [
+        390,
+        690
+      ],
+      [
+        870,
+        1290
+      ]
+    ],
+    "6": [
+      [
+        510,
+        750
+      ]
+    ]
+  },
+  "aiEnabled": true,
+  "aiUserPreferenceSet": false,
+  "geminiModel": "gemini-3.8-flash",
+  "learnedStyleProfile": "",
+  "learnedBusinessProfile": "",
+  "learnedKnowledge": {},
+  "historyScanStatus": "nunca_rodado",
+  "historyScanRunAt": null,
+  "historyMessagesAnalyzed": 0,
+  "historyLastMessageIdAnalyzed": 0,
+  "aiBootstrapStatus": "aguardando_whatsapp",
+  "aiBootstrapStartedAt": null,
+  "aiBootstrapCompletedAt": null,
+  "aiBootstrapError": "",
+  "aiBootstrapImportedMessages": 0,
+  "aiBootstrapTotalMessages": 0,
+  "aiBootstrapTotalContacts": 0,
+  "aiBootstrapEligibleContacts": 0,
+  "aiBootstrapSkippedContacts": 0,
+  "aiBootstrapProfiledContacts": 0,
+  "aiBootstrapPhase": "aguardando",
+  "aiBootstrapPercent": 0,
+  "aiBootstrapCurrent": "",
+  "aiBootstrapAutoStart": true,
+  "aiReady": false,
+  "aiBootstrapControl": "running",
+  "aiBootstrapQuality": "",
+  "aiBootstrapMaxMessages": 280,
+  "aiBootstrapMaxContacts": 10,
+  "aiBootstrapContactMessages": 20,
+  "aiBootstrapCompanyConcurrency": 2,
+  "aiBootstrapContactConcurrency": 5,
+  "aiBootstrapCompanyCharBudget": 62000,
+  "aiBootstrapBudgetMs": 95000,
+  "aiBootstrapSampledMessages": 0,
+  "aiBootstrapTargetContacts": 0,
+  "aiBootstrapDeferredContacts": 0,
+  "aiBootstrapGeneratedFlows": 0,
+  "aiBootstrapGeneratedQuickReplies": 0,
+  "aiBootstrapLearnedRules": 0,
+  "aiBootstrapKnowledgeItems": 0,
+  "aiBootstrapKnowledgeGaps": 0,
+  "aiBootstrapProspectingDrafts": 0,
+  "aiBootstrapSeededContacts": 0,
+  "aiMode": "autonomo",
+  "autoRoutingEnabled": true,
+  "autoCustomerProfiling": true,
+  "aiContextMessages": 30,
+  "agentDelayMinMs": 1200,
+  "agentDelayMaxMs": 3400,
+  "continuousLearningEnabled": true,
+  "continuousLearningBatchMessages": 8,
+  "continuousLearningMinIntervalMinutes": 15,
+  "continuousLearningProfileLimit": 4,
+  "continuousLearningLastAt": null,
+  "continuousLearningStatus": "aguardando_novas_mensagens",
+  "continuousLearningLastNewMessages": 0,
+  "continuousLearningRuns": 0,
+  "continuousLearningFailures": 0,
+  "continuousLearningLastDurationMs": 0,
+  "continuousLearningLastProfiled": 0,
+  "continuousLearningLastKnowledgeDelta": 0,
+  "continuousLearningLastError": "",
+  "knowledgeGapDetection": true,
+  "browserNotifications": true,
+  "prospectingEnabled": true,
+  "prospectingMinIntervalSeconds": 180,
+  "prospectingGlobalDailyLimit": 30,
+  "prospectingStartHour": 8,
+  "prospectingEndHour": 20,
+  "reactivationCampaignEnabled": false,
+  "prospectingOptOutKeywords": [
+    "sair",
+    "parar",
+    "não quero",
+    "nao quero",
+    "remover",
+    "cancelar mensagens"
+  ],
+  "proactiveEnabled": true,
+  "proactiveGlobalMinIntervalSeconds": 120,
+  "proactiveDailyLimit": 30,
+  "proactiveScenarios": {
+    "plans_silence": {
+      "enabled": true,
+      "label": "Pediu preço/oferta e sumiu",
+      "silenceHours": 3,
+      "minScore": 35,
+      "maxAttempts": 2,
+      "betweenAttemptsHours": 20,
+      "messages": [
+        "Oi {nome}! Conseguiu dar uma olhada no que te enviamos? Se quiser, eu te ajudo a escolher a melhor opção.",
+        "Oi {nome}! Ficou alguma dúvida sobre as opções ou valores? Posso te explicar por aqui."
+      ]
+    },
+    "hot_silence": {
+      "enabled": true,
+      "label": "Lead quente em silêncio",
+      "silenceHours": 6,
+      "minScore": 75,
+      "maxAttempts": 2,
+      "betweenAttemptsHours": 24,
+      "messages": [
+        "Oi {nome}! Passando porque vi que você estava avaliando com a gente. Ficou alguma dúvida ou posso te ajudar no próximo passo?",
+        "Oi {nome}! Se ainda estiver pensando, me fala o que está pesando na decisão que eu tento te ajudar por aqui."
+      ]
+    },
+    "closing_silence": {
+      "enabled": true,
+      "label": "Fechamento sem resposta",
+      "silenceHours": 4,
+      "minScore": 55,
+      "maxAttempts": 3,
+      "betweenAttemptsHours": 18,
+      "messages": [
+        "Oi {nome}! Ficou tudo certo por aí? Se quiser, posso te ajudar a finalizar ou tirar alguma dúvida antes.",
+        "Oi {nome}! Só passando para saber se ficou alguma pendência para conseguirmos seguir.",
+        "Oi {nome}! Vou deixar você à vontade, mas se ainda quiser seguir ou tiver alguma dúvida, é só me chamar por aqui."
+      ]
+    },
+    "unanswered_segment": {
+      "enabled": true,
+      "label": "Aguardando cliente - ação manual",
+      "silenceHours": 1,
+      "minScore": 0,
+      "maxAttempts": 1,
+      "betweenAttemptsHours": 24,
+      "messages": [
+        "Oi {nome}! Passando para saber se conseguiu ver minha última mensagem. Ficou alguma dúvida?"
+      ]
+    }
+  },
+  "journeyAutomations": {
+    "fechamento": {
+      "enabled": true,
+      "delayHours": 24,
+      "message": "Oi {nome}! Passando para saber se ficou alguma dúvida e se posso te ajudar com o próximo passo."
+    },
+    "agendamento_avaliacao": {
+      "enabled": true,
+      "delayHours": 24,
+      "message": "Oi {nome}! Ficou tudo certo para o seu agendamento? Se precisar ajustar o horário, me avisa por aqui."
+    },
+    "pos_avaliacao": {
+      "enabled": true,
+      "delayHours": 3,
+      "message": "Oi {nome}! Como foi seu atendimento? Se ficou alguma dúvida, pode me chamar por aqui."
+    },
+    "primeiro_treino": {
+      "enabled": true,
+      "delayHours": 12,
+      "message": "Oi {nome}! Como foi esse primeiro passo com a gente? Se precisar de ajuda nessa fase inicial, estou por aqui."
+    },
+    "acompanhamento": {
+      "enabled": true,
+      "delayHours": 168,
+      "message": "Oi {nome}! Passando para acompanhar como estão as coisas por aí. Ficou alguma dúvida ou precisa de ajuda com algo?"
+    },
+    "cancelamento": {
+      "enabled": true,
+      "delayHours": 24,
+      "message": "Oi {nome}. Passando apenas para confirmar se ficou tudo certo com o encerramento. Se precisar de algo, seguimos à disposição."
+    },
+    "pos_cancelamento": {
+      "enabled": true,
+      "delayHours": 720,
+      "message": "Oi {nome}! Faz um tempo desde nosso último contato. Se em algum momento fizer sentido voltar a falar com a gente, pode chamar por aqui."
+    },
+    "reativacao": {
+      "enabled": false,
+      "delayHours": 336,
+      "message": "Oi {nome}! Passando para saber como você está e se podemos ajudar em uma nova necessidade por aqui."
+    }
+  },
+  "settingsUpdatedAt": "2026-09-30T12:39:08.048Z",
+  "settingsRevision": 1,
+  "businessType": "general",
+  "businessDescription": "",
+  "safetyMaxAutomatedInitiationsPerDay": 40,
+  "safetyRestrictionCooldownHours": 48,
+  "safetyMinAutomatedGapSeconds": 10
+}

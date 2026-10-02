@@ -1,0 +1,27 @@
+const assert=require('assert');
+const fs=require('fs'),os=require('os'),path=require('path');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'alone-v7415-'));
+process.env.ALONE_BASE_DIR=tmp;
+fs.mkdirSync(path.join(tmp,'data'),{recursive:true});
+fs.copyFileSync(path.join(__dirname,'..','data','flows.json'),path.join(tmp,'data','flows.json'));
+fs.copyFileSync(path.join(__dirname,'..','data','settings.json'),path.join(tmp,'data','settings.json'));
+const settings=require('../codigo-fonte-dev/server/settings');
+const flows=require('../codigo-fonte-dev/server/flows');
+const db=require('../codigo-fonte-dev/server/db');
+const {isOptOutText}=require('../codigo-fonte-dev/server/optout');
+const Module=require('module');const originalLoad=Module._load;Module._load=function(request,parent,isMain){if(request==='./whatsapp'&&parent?.filename?.endsWith('prospecting.js'))return {sendManualMessage:async()=>{},getStatus:()=>({status:'conectado'})};return originalLoad.apply(this,arguments);};const prospecting=require('../codigo-fonte-dev/server/prospecting');Module._load=originalLoad;
+const st=settings.loadSettings();
+assert.notStrictEqual(st.gymName,'Alone.AI','branding não pode virar nome operacional da empresa');
+assert.equal(isOptOutText('quero sair do plano',st),false);
+assert.equal(isOptOutText('não quero mais mensagens',st),true);
+const rendered=flows.renderResponse({type:'text',text:'Olá da {company_name}. Horário: {business_hours}'},{...st,gymName:'Empresa Teste'});
+assert(rendered.text.includes('Empresa Teste'));
+const sunday=new Date('2026-10-04T13:30:00Z'); // 10:30 America/Sao_Paulo
+assert.equal(flows.isWithinBusinessHours(sunday,st),true);
+assert.equal(prospecting.withinProspectingWindow(st,sunday),true,'campanha deve respeitar domingo aberto da agenda');
+const q=db.createQuickReply({shortcut:'planos',title:'Planos',type:'text',text:'Mensagem A',triggers:['valor','quanto custa'],auto_use:true,match_mode:'smart',smart_threshold:.81,priority:25,delay_min_ms:3000,delay_max_ms:7000,cooldown_hours:2,ptt:false});
+assert.equal(q.delay_min_ms,3000);assert.equal(q.delay_max_ms,7000);assert.equal(q.cooldown_hours,2);assert.equal(q.smart_threshold,.81);
+const q2=db.updateQuickReply(q.id,{text:'Mensagem B',delay_min_ms:5000,delay_max_ms:5000,enabled:false});
+assert.equal(q2.text,'Mensagem B');assert.equal(q2.delay_min_ms,5000);assert.equal(q2.delay_max_ms,5000);assert.equal(q2.enabled,false);
+db.flush();
+console.log('Smoke v7.4.15 OK');

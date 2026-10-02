@@ -1,0 +1,20 @@
+Coloque aqui seus áudios pré-gravados, um arquivo por situação.
+
+Nomes esperados (conforme configurado em data/flows.json):
+- planos_precos.ogg   → você explicando os planos e valores
+- cobranca.ogg        → você falando sobre pagamento/2ª via
+- reativacao.ogg      → convite carinhoso pra quem sumiu da academia
+
+FORMATO: use .ogg (formato de áudio do WhatsApp). Se você gravar em .mp3 ou .m4a,
+me avise (ou peça pro Claude) que a gente ajusta a conversão — é rápido.
+
+Como gravar rápido:
+1. Grave o áudio direto no WhatsApp pra você mesmo (ou peça pra alguém te mandar).
+2. Abra a conversa, toque e segure no áudio → Encaminhar → escolha "Salvar em Arquivos"
+   (no Android) ou compartilhe pra você mesmo por e-mail/Drive (no iPhone).
+3. Renomeie o arquivo com o nome exato acima e arraste pra essa pasta.
+
+Se quiser adicionar mais situações de áudio, é só:
+1. Salvar o arquivo aqui com um nome novo, ex: boas_vindas.ogg
+2. No painel (aba "Respostas Automáticas") ou direto no data/flows.json,
+   adicionar um bloco { "type": "audio", "file": "audio/boas_vindas.ogg" }

@@ -1,0 +1,17 @@
+const fs=require('fs');const path=require('path');const assert=require('assert');
+const root=path.join(__dirname,'..');
+const index=fs.readFileSync(path.join(root,'codigo-fonte-dev/server/index.js'),'utf8');
+const reliability=fs.readFileSync(path.join(root,'codigo-fonte-dev/server/reliability.js'),'utf8');
+const onboarding=fs.readFileSync(path.join(root,'codigo-fonte-dev/server/onboarding.js'),'utf8');
+const settings=fs.readFileSync(path.join(root,'codigo-fonte-dev/server/settings.js'),'utf8');
+const app=fs.readFileSync(path.join(root,'public/app.js'),'utf8');
+assert(index.includes("/api/contacts/:id/diagnostics"),'diagnóstico por conversa ausente');
+assert(index.includes("/api/ai/learning-status"),'status de aprendizado ausente');
+assert(index.includes('cleanupOrphanQuickReplyMedia'),'limpeza de mídia órfã ausente');
+assert(reliability.includes('retry_skipped_duplicate'),'proteção de retry duplicado ausente');
+assert(reliability.includes('duplicate_already_sent'),'retry não registra duplicidade');
+assert(settings.includes('continuousLearningLastDurationMs'),'métrica de duração do aprendizado ausente');
+assert(onboarding.includes('continuousLearningLastKnowledgeDelta'),'delta de conhecimento não persistido');
+assert(app.includes('Diagnóstico desta conversa'),'painel de diagnóstico não renderizado');
+assert(app.includes('loadLearningStatus'),'observabilidade de aprendizado não renderizada');
+console.log('Smoke v7.4.17 OK');

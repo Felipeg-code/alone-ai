@@ -1,0 +1,36 @@
+const fs=require('fs');
+const os=require('os');
+const path=require('path');
+const assert=require('assert');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'alone-v7410-'));
+fs.mkdirSync(path.join(tmp,'data'),{recursive:true});
+process.env.ALONE_BASE_DIR=tmp;
+const settings=require('../codigo-fonte-dev/server/settings');
+const flows=require('../codigo-fonte-dev/server/flows');
+let st=settings.saveSettings({businessTimezone:'America/Sao_Paulo',businessSchedule:{0:[],1:[[780,1080]],2:[[780,1080]],3:[[780,1080]],4:[[780,1080]],5:[[780,1080]],6:[]}});
+let d=flows.businessHoursDiagnostics(new Date('2026-09-29T16:53:00Z'),st);
+assert.equal(d.timeZone,'America/Sao_Paulo');
+assert.equal(d.localTime,'13:53');
+assert.equal(d.day,2);
+assert.equal(d.within,true);
+st=settings.saveSettings({businessSchedule:{0:[],1:[[840,1320]],2:[[840,1320]],3:[[840,1320]],4:[[840,1320]],5:[[840,1320]],6:[]}});
+d=flows.businessHoursDiagnostics(new Date('2026-09-29T16:53:00Z'),st);
+assert.equal(d.within,false);
+let calls=[];
+global.fetch=async url=>{
+  calls.push(String(url));
+  if(String(url).includes('gemini-3.8-flash'))return new Response(JSON.stringify({error:{code:429,message:'Quota exceeded. Please retry in 49.3s.',status:'RESOURCE_EXHAUSTED'}}),{status:429,headers:{'content-type':'application/json'}});
+  return new Response(JSON.stringify({candidates:[{content:{parts:[{text:'fallback-ok'}]}}],usageMetadata:{promptTokenCount:1,candidatesTokenCount:1}}),{status:200,headers:{'content-type':'application/json'}});
+};
+const gemini=require('../codigo-fonte-dev/server/gemini');
+(async()=>{
+  const started=Date.now();
+  const out=await gemini.callGemini({apiKey:'test',model:'gemini-3.8-flash',systemInstruction:'x',contents:[{role:'user',parts:[{text:'x'}]}],retries:3});
+  assert.equal(out,'fallback-ok');
+  assert(calls.some(x=>x.includes('gemini-3.8-flash')));
+  assert(calls.some(x=>x.includes('gemini-3.7-flash')));
+  assert(Date.now()-started<5000,'429 não deve bloquear por dezenas de segundos');
+  const rt=gemini.runtimeStatus();
+  assert(rt.quotaCooldowns['gemini-3.8-flash']);
+  console.log('Smoke v7.4.10 OK');
+})().catch(e=>{console.error(e);process.exit(1)});

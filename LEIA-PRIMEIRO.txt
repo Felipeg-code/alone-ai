@@ -1,0 +1,26 @@
+ALONE.AI v7.4.17 - INICIALIZACAO CONECTADA
+
+COMO ABRIR
+1. Extraia o ZIP inteiro para uma pasta normal do Windows.
+2. Tenha internet ativa.
+3. Clique duas vezes em INICIAR_ALONE.bat.
+4. O Alone verifica Node.js/npm e Git. Se já existirem em versão compatível, reutiliza.
+5. Se faltar algum componente, prepara somente o necessário em modo portátil.
+6. Instala as dependências da própria pasta e abre o painel em http://127.0.0.1:3333.
+
+PREPARACAO POS-QR
+- Conecte o WhatsApp pela aba Conexão.
+- O histórico é sincronizado e analisado.
+- O sistema aprende estilo, operação e perfis prioritários.
+- Também cria automaticamente gatilhos + mensagens em Respostas e respostas rápidas com base no histórico real.
+- Repetir a preparação não duplica itens gerenciados pela IA.
+- Edições manuais feitas depois pelo gestor são preservadas.
+
+IMPORTANTE
+- Use INICIAR_ALONE.bat como forma oficial de abertura desta versão.
+- Internet é necessária para WhatsApp, Gemini e preparação inicial do ambiente.
+- Se houver erro, execute DIAGNOSTICO.bat e consulte logs/server-error.log e logs/server-out.log.
+
+SEGURANCA
+- A chave Gemini fica em data/secrets.json e não deve ser enviada ao GitHub.
+- O painel abre apenas no computador local por padrão (127.0.0.1).

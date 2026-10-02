@@ -1,0 +1,15 @@
+const assert=require('assert');const fs=require('fs');const os=require('os');const path=require('path');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'alone-v7430-'));process.env.ALONE_BASE_DIR=tmp;fs.mkdirSync(path.join(tmp,'data'),{recursive:true});
+const settings=require('../codigo-fonte-dev/server/settings');const db=require('../codigo-fonte-dev/server/db');const ops=require('../codigo-fonte-dev/server/ops');const safety=require('../codigo-fonte-dev/server/safety-engine');const policy=require('../codigo-fonte-dev/server/outbound-policy');
+let s=settings.loadSettings();assert.strictEqual(s.accountProtectionMode,'strict');assert.strictEqual(s.outboundAutomationMode,'approval');
+const c=db.upsertContact('5511999900001','Cliente');db.touchInbound(c.id);db.setConsent(c.id,'opted_in','manual');
+assert.strictEqual(policy.check({settings:s,contact:db.getContactById(c.id),kind:'manual',source:'manual'}).allowed,true);
+assert.strictEqual(policy.check({settings:s,contact:db.getContactById(c.id),kind:'campaign',source:'prospeccao:1'}).allowed,false);
+s=settings.saveSettings({accountProtectionMode:'off',outboundAutomationMode:'approval'});
+let d=policy.check({settings:s,contact:db.getContactById(c.id),kind:'proactive',source:'proatividade:hot'});assert.strictEqual(d.requiresApproval,true);
+const a1=ops.enqueueOutboundApproval({kind:'proactive',contactId:c.id,text:'teste',source:'proatividade:hot',uniqueKey:'u1'});const a2=ops.enqueueOutboundApproval({kind:'proactive',contactId:c.id,text:'teste',source:'proatividade:hot',uniqueKey:'u1'});assert.strictEqual(a1.id,a2.id);assert.strictEqual(ops.approvalMetrics().pending,1);
+assert.strictEqual(db.getConsentLedger(c.id).categories.marketing,'unknown');
+db.setConsentCategory(c.id,'marketing','opted_in','teste');s=settings.saveSettings({outboundAutomationMode:'automatic'});d=policy.check({settings:s,contact:db.getContactById(c.id),kind:'campaign',source:'prospeccao:1'});assert.strictEqual(d.allowed,true);
+const health=safety.calculateHealth(s);assert(Number.isFinite(health.score)&&health.score>=0&&health.score<=100);assert(health.metrics);
+const html=fs.readFileSync(path.join(__dirname,'..','public','index.html'),'utf8');for(const id of ['safetyHealthBadge','outboundAutomationMode','safetyApprovalList','saveSafetyEngineBtn'])assert(html.includes(`id="${id}"`),`UI ausente: ${id}`);
+db.flush();console.log('Smoke v7.4.30 OK',{health:health.score,approvalQueue:true,consentLedger:true,policy:true});process.on('exit',()=>{try{fs.rmSync(tmp,{recursive:true,force:true});}catch(_){}});

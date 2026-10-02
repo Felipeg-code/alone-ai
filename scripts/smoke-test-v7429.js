@@ -1,0 +1,12 @@
+const assert=require('assert');const fs=require('fs');const os=require('os');const path=require('path');
+const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'alone-v7429-'));process.env.ALONE_BASE_DIR=tmp;fs.mkdirSync(path.join(tmp,'data'),{recursive:true});
+const settings=require('../codigo-fonte-dev/server/settings');let s=settings.loadSettings();assert.strictEqual(s.accountProtectionMode,'strict');assert.strictEqual(s.prospectingEnabled,false);
+const db=require('../codigo-fonte-dev/server/db');const c=db.upsertContact('5511999990001','Teste',{consentStatus:'opted_in'});db.touchInbound(c.id);const contact=db.getContactById(c.id);
+const policy=require('../codigo-fonte-dev/server/outbound-policy');
+assert.strictEqual(policy.check({settings:s,contact,kind:'campaign',source:'prospeccao:1'}).allowed,false);
+assert.strictEqual(policy.check({settings:s,contact,kind:'proactive',source:'proatividade:hot'}).allowed,false);
+assert.strictEqual(policy.check({settings:s,contact,kind:'manual',source:'manual'}).allowed,true);
+assert.strictEqual(policy.check({settings:s,contact,kind:'ai_reply',source:'ia_gemini_retry'}).allowed,true);
+s=settings.saveSettings({accountProtectionMode:'balanced',accountProtectionWindowHours:24,outboundAutomationMode:'automatic'});assert.strictEqual(policy.check({settings:s,contact,kind:'proactive',source:'proatividade:hot'}).allowed,true);assert.strictEqual(policy.check({settings:s,contact,kind:'campaign',source:'prospeccao:1'}).allowed,false);
+const old=db.upsertContact('5511999990002','Antigo',{consentStatus:'opted_in'});db.updateContact(old.id,{last_inbound_at:new Date(Date.now()-25*3600000).toISOString()},{activity:false});assert.strictEqual(policy.check({settings:s,contact:db.getContactById(old.id),kind:'journey',source:'jornada:fechamento'}).allowed,false);
+console.log('Smoke v7.4.29 OK',{strictBlocksAutomation:true,manualAllowed:true,balancedRecentFollowup:true,campaignProtected:true});fs.rmSync(tmp,{recursive:true,force:true});

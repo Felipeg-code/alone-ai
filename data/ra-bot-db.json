@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 10,
+  "nextContactId": 1,
+  "nextMessageId": 1,
+  "nextActivityId": 1,
+  "nextCampaignId": 1,
+  "nextQueueId": 1,
+  "nextTaskId": 1,
+  "nextEventId": 1,
+  "nextQuickReplyId": 1,
+  "contacts": [],
+  "messages": [],
+  "activities": [],
+  "prospectCampaigns": [],
+  "prospectQueue": [],
+  "tasks": [],
+  "calendarEvents": [],
+  "quickReplies": []
+}

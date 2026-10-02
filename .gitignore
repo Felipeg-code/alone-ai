@@ -1,0 +1,41 @@
+# ============================================================
+# Alone.AI — proteção do repositório
+# ============================================================
+
+# Dependências
+node_modules/
+
+# Builds / distribuição
+dist/
+build/
+*.exe
+*.pkg
+
+# SEGREDOS — nunca commitar (chave Gemini fica aqui)
+data/secrets.json
+data/secrets.*.json
+.env
+.env.*
+
+# Dados de runtime (recriados automaticamente pelo servidor)
+data/alone.db
+data/alone.db-journal
+data/alone.db-shm
+data/alone.db-wal
+data/backups/
+data/backups/*
+logs/*.log
+logs/server-*.log
+
+# Sessão / credenciais WhatsApp (se surgirem dentro de data/)
+data/creds.json
+data/auth_info/
+data/*session*
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/

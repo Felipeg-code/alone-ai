@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alone.AI — Painel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Tela de login: cada atendente escolhe seu nome + PIN -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="alone-brand alone-brand-login"><img src="alone-ai-logo.png" alt="Alone.AI"><span id="gymNameLogin" class="sr-only">Alone.AI</span></div>
+      <p>Quem é você?</p>
+      <div id="agentPicker" class="agent-picker"></div>
+      <div id="pinBox" class="pin-box" style="display:none;">
+        <p id="pinPrompt">Digite seu PIN</p>
+        <input type="password" id="pinInput" maxlength="12" inputmode="numeric" />
+        <button id="pinSubmit">Entrar</button>
+        <p id="loginError" class="error-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- App principal -->
+  <div id="app" style="display:none;">
+    <nav class="app-sidebar" aria-label="Navegação principal">
+      <div class="sidebar-brand alone-brand"><img src="alone-ai-wordmark.png" alt="Alone.AI"><span id="gymNameHeader" class="sr-only">Alone.AI</span></div>
+      <div class="sidebar-section-label">Operação</div>
+      <button class="tab-btn nav-main" data-tab="gestao"><span class="nav-icon">◫</span><span>Visão</span></button>
+      <button class="tab-btn nav-main active" data-tab="inbox"><span class="nav-icon">◉</span><span>Inbox</span></button>
+      <button class="tab-btn nav-sub" data-tab="conversas"><span class="nav-icon">↳</span><span>Conversas</span></button>
+      <button class="tab-btn nav-main" data-tab="crm"><span class="nav-icon">▦</span><span>CRM</span></button>
+      <button class="tab-btn nav-main" data-tab="fluxos"><span class="nav-icon">✦</span><span>Respostas</span></button>
+
+      <div class="sidebar-section-label">Comercial</div>
+      <button class="tab-btn nav-main" data-tab="prospeccao"><span class="nav-icon">↗</span><span>Comercial</span></button>
+      <button class="tab-btn nav-sub" data-tab="ia"><span class="nav-icon">↳</span><span>Inteligência</span></button>
+
+      <div class="sidebar-section-label">Sistema</div>
+      <button class="tab-btn nav-main" data-tab="config"><span class="nav-icon">⚙</span><span>Configurações</span></button>
+      <button class="tab-btn nav-sub" data-tab="equipe"><span class="nav-icon">↳</span><span>Equipe</span></button>
+      <button class="tab-btn nav-sub" data-tab="conexao"><span class="nav-icon">↳</span><span>Conexão</span></button>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-version">Minimal Wide · v7.4.26</div>
+    </nav>
+
+    <header class="app-topbar">
+      <div class="alone-brand mobile-brand"><img src="alone-ai-wordmark.png" alt="Alone.AI"></div>
+      <div class="header-search"><input id="globalSearchInput" placeholder="Buscar cliente, telefone, tag ou mensagem…" autocomplete="off"><kbd>Ctrl K</kbd></div>
+      <div class="header-right">
+        <div id="statusBadge" class="badge">verificando...</div>
+        <span id="currentAgentBadge" class="agent-badge"></span>
+        <button id="logoutBtn" class="logout-btn">Sair</button>
+      </div>
+    </header>
+
+    <section id="tab-inbox" class="tab-content active">
+      <div class="crm-header"><div><h2>Caixa de entrada inteligente</h2><p class="hint">Prioriza o que precisa de resposta humana, o que está com a IA, follow-ups de hoje e possíveis problemas.</p></div><button id="refreshInboxBtn">↻ Atualizar</button></div>
+      <div id="inboxMetrics" class="metrics-row"></div><div class="inbox-filters"><select id="inboxDepartment"><option value="">Todos os setores</option><option>atendimento</option><option>comercial</option><option>financeiro</option><option>retencao</option><option>gestao</option></select><select id="inboxTemperature"><option value="">Todas as temperaturas</option><option value="quente">🔥 Quente</option><option value="morno">🟡 Morno</option><option value="frio">🔵 Frio</option></select><select id="inboxStage"><option value="">Todas as jornadas</option></select><input id="inboxFilterText" placeholder="Filtrar por nome, tag ou interesse"></div>
+      <div id="inboxGroups" class="inbox-grid"></div>
+    </section>
+
+    <section id="tab-crm" class="tab-content">
+      <div class="crm-header">
+        <h2>CRM</h2>
+        <div class="crm-header-actions">
+          <div class="crm-scope-toggle">
+            <button class="scope-btn active" data-scope="mine">Meu CRM</button>
+            <button class="scope-btn" data-scope="all">CRM Geral (equipe)</button>
+          </div>
+          <button id="customizeCrmBtn">⚙ Personalizar CRM</button>
+        </div>
+      </div>
+      <div id="crmMetrics" class="metrics-row"></div>
+      <div id="crmCustomizer" class="settings-card crm-customizer" style="display:none"></div>
+      <div id="kanban" class="kanban"></div>
+    </section>
+
+    <section id="tab-conversas" class="tab-content">
+      <h2>Conversas</h2>
+      <div class="conversas-layout">
+        <div class="conversas-list" id="conversasList"></div>
+        <div class="conversas-detail" id="conversasDetail">
+          <p class="empty-hint">Selecione uma conversa à esquerda.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-prospeccao" class="tab-content">
+      <div class="crm-header">
+        <div>
+          <h2>Prospecção automática</h2>
+          <p class="hint">Importe listas grandes ou adicione um contato por linha. A fila envia sequencialmente, respeita horário, intervalo, limites e pedidos para parar.</p>
+        </div>
+        <button id="refreshProspectingBtn">↻ Atualizar</button>
+      </div>
+
+      <div class="settings-card wide-card account-protection-card">
+        <div class="crm-header"><div><h3>🛡 Proteção da conta WhatsApp</h3><p class="hint">Reduz automações iniciadas pelo sistema. Recomendado após qualquer restrição, alerta de spam ou queda de qualidade.</p></div><span id="accountProtectionBadge" class="campaign-status paused">ESTRITA</span></div>
+        <div class="form-row"><label>Nível de proteção<select id="accountProtectionMode"><option value="strict">Estrita — somente respostas a clientes + atendimento manual</option><option value="balanced">Equilibrada — follow-up contextual só dentro de 24h</option><option value="off">Desativada — usar regras normais do sistema</option></select></label><label>Janela recente do cliente (horas)<input id="accountProtectionWindowHours" type="number" min="1" max="72" value="24"></label></div>
+        <p id="accountProtectionHelp" class="hint"></p>
+        <button id="saveAccountProtectionBtn">💾 Salvar proteção da conta</button>
+      </div>
+
+      <div class="settings-card wide-card safety-engine-card">
+        <div class="crm-header"><div><h3>🧠 WhatsApp Safety Engine</h3><p class="hint">Governança interna de outbound. O score abaixo é do Alone.AI, não é a nota oficial da Meta.</p></div><span id="safetyHealthBadge" class="campaign-status paused">--/100</span></div>
+        <div id="safetyHealthGrid" class="health-grid"></div>
+        <div class="form-row">
+          <label>Modo de automação<select id="outboundAutomationMode"><option value="manual">Manual — apenas identifica oportunidades</option><option value="approval">Aprovação — prepara e aguarda um humano</option><option value="automatic">Automático — envia quando todas as políticas permitem</option></select></label>
+          <label>Máx. iniciativas automáticas/hora<input id="safetyMaxAutomatedInitiationsPerHour" type="number" min="1" max="100" value="20"></label>
+          <label>Máx. iniciativas automáticas/24h<input id="safetyMaxAutomatedInitiationsPerDay" type="number" min="1" max="500" value="40"></label>
+          <label>Intervalo global mínimo (s)<input id="safetyMinAutomatedGapSeconds" type="number" min="0" max="3600" value="10"></label>
+        </div>
+        <div class="form-row">
+          <label>Alerta de saúde abaixo de<input id="safetyWarningThreshold" type="number" min="30" max="95" value="70"></label>
+          <label>Circuit breaker abaixo de<input id="safetyCircuitBreakerThreshold" type="number" min="10" max="80" value="45"></label>
+          <label>Aprovação expira em (h)<input id="safetyApprovalMaxAgeHours" type="number" min="1" max="168" value="24"></label>
+          <label>Cooldown pós-restrição (h)<input id="safetyRestrictionCooldownHours" type="number" min="1" max="168" value="48"></label>
+          <label>Cooldown de rate-limit (h)<input id="safetyRateLimitCooldownHours" type="number" min="1" max="48" value="6"></label>
+          <label>Recuperação gradual (h)<input id="safetyRecoveryProbationHours" type="number" min="0" max="168" value="24"></label>
+          <label>Capacidade na recuperação (%)<input id="safetyRecoveryLimitPercent" type="number" min="10" max="100" value="25"></label>
+        </div>
+        <label class="switch-row"><input id="safetyCircuitBreakerEnabled" type="checkbox" checked><span>Ativar circuit breaker automático</span></label>
+        <div class="chat-actions"><button id="saveSafetyEngineBtn">💾 Salvar Safety Engine</button><button id="refreshSafetyEngineBtn" class="secondary">↻ Atualizar saúde</button></div>
+        <details class="safety-approval-box" open><summary>Mensagens aguardando aprovação humana <span id="safetyApprovalCount" class="badge">0</span></summary><div id="safetyApprovalList" class="safety-approval-list"><p class="hint">Nenhuma mensagem pendente.</p></div></details>
+      </div>
+
+      <div class="prospecting-grid">
+        <div class="settings-card">
+          <h3>Nova campanha</h3>
+          <label>Nome da campanha</label>
+          <input id="prospectCampaignName" placeholder="Ex.: Leads Setembro" />
+          <label>Mensagem inicial</label>
+          <textarea id="prospectInitialMessage" rows="5" placeholder="Oi {nome}, tudo bem? ..."></textarea>
+          <p class="hint">Variáveis: <code>{nome}</code>, <code>{nome_completo}</code> e <code>{telefone}</code>.</p>
+          <label>Etapa inicial da jornada</label>
+          <select id="prospectStage"></select>
+          <div class="form-row">
+            <label>Intervalo mínimo (segundos)<input type="number" id="prospectInterval" min="60" value="120"></label>
+            <label>Limite diário<input type="number" id="prospectDailyLimit" min="1" max="500" value="50"></label>
+          </div>
+          <label class="switch-row compliance-check"><input type="checkbox" id="prospectPermission"><span>Confirmo que estes contatos podem receber esta abordagem da empresa.</span></label>
+          <button id="createProspectCampaignBtn">+ Criar campanha</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>Controle global</h3>
+          <label class="switch-row"><input type="checkbox" id="prospectingEnabled"><span>Ativar processador automático da fila</span></label>
+          <div class="form-row">
+            <label>Início dos envios<input type="number" id="prospectingStartHour" min="0" max="23"></label>
+            <label>Fim dos envios<input type="number" id="prospectingEndHour" min="1" max="24"></label>
+          </div>
+          <label>Limite global por dia</label>
+          <input type="number" id="prospectingGlobalDailyLimit" min="1" max="500" />
+          <button id="saveProspectingSettingsBtn">💾 Salvar regras</button>
+          <p class="hint">A lista pode crescer sem limite fixo. O limite diário controla apenas quantas conversas novas são iniciadas por dia.</p>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>Automação da jornada</h3>
+        <p class="hint">Follow-ups configuráveis depois que o CRM identifica uma mudança real de etapa. Só são enviados para contatos autorizados e que não pediram opt-out.</p>
+        <div id="journeyAutomationSettings"></div>
+        <button id="saveJourneyAutomationsBtn">💾 Salvar automações da jornada</button>
+      </div>
+
+      <div class="settings-card wide-card">
+        <div class="crm-header"><div><h3>Templates de jornada</h3><p class="hint">Modelos reutilizáveis para lead, agendamento, conversão, cancelamento e outros processos.</p></div><button id="newJourneyTemplateBtn">+ Novo template</button></div>
+        <div id="journeyTemplates" class="template-grid"></div>
+      </div>
+      <h3>Campanhas</h3>
+      <div id="prospectingStatus" class="hint"></div>
+      <div id="prospectingCampaigns"></div>
+    </section>
+
+    <section id="tab-fluxos" class="tab-content">
+      <div class="crm-header flow-page-header">
+        <div><h2>Respostas e automações</h2><p class="hint">O padrão do Alone é generativo: gatilhos identificam intenção e contexto para a IA responder na hora. Sequências fixas ficam apenas para exceções manuais e ações operacionais.</p></div>
+        <div class="flow-top-actions"><button id="newFlowBtn" class="primary-action">+ Nova automação</button><button id="exportFlowsBtn">⇩ Exportar</button><button id="importFlowsBtn">⇧ Importar</button><input id="importFlowsFile" type="file" accept="application/json,.json" hidden></div>
+      </div>
+
+      <div class="flow-guide">
+        <div><b>1</b><span><strong>QUANDO</strong><small>O que o cliente fala ou o que acontece</small></span></div>
+        <div class="flow-guide-arrow">→</div>
+        <div><b>2</b><span><strong>RESPONDER</strong><small>Texto, espera, áudio, foto, vídeo ou documento</small></span></div>
+        <div class="flow-guide-arrow">→</div>
+        <div><b>3</b><span><strong>DEPOIS</strong><small>Atualizar CRM, tags, setor ou revisão humana</small></span></div>
+      </div>
+
+      <div class="flow-list-toolbar">
+        <label class="flow-search">🔎<input id="flowSearchInput" placeholder="Buscar automação, palavra-chave ou assunto..."></label>
+        <span id="flowCountBadge" class="flow-count-badge">0 automações</span>
+      </div>
+
+      <div class="settings-card response-library-card response-center" id="responseCenter">
+        <div class="response-center-head">
+          <div><h3>💬 Central de Respostas</h3><p class="hint">Revise o que a IA aprendeu, aprove apenas o que ainda é verdadeiro e controle exatamente o que pode ser enviado.</p></div>
+          <div class="response-center-actions"><button id="auditLearnedResponsesBtn" type="button">🛡 Auditar aprendizado antigo</button><button id="newResponseLibraryBtn" type="button" class="primary-action">+ Nova resposta</button></div>
+        </div>
+        <div id="responseLibraryStats" class="response-stats"></div>
+        <div class="response-center-toolbar">
+          <div class="response-filter-tabs" id="responseFilterTabs">
+            <button type="button" data-response-filter="pending" class="active">🟠 Revisar</button>
+            <button type="button" data-response-filter="approved">✅ Aprovadas</button>
+            <button type="button" data-response-filter="archived">⛔ Arquivadas</button>
+            <button type="button" data-response-filter="all">Todas</button>
+          </div>
+          <label class="response-search">🔎 <input id="responseLibrarySearch" placeholder="Buscar por título, gatilho ou conteúdo..."></label>
+        </div>
+        <div class="response-workspace">
+          <aside class="response-list-pane"><div id="responseLibraryList" class="response-library-list"></div></aside>
+          <div class="response-editor-pane">
+            <div id="responseEditorEmpty" class="response-editor-empty"><b>Selecione uma resposta para editar</b><span>Ou clique em “Nova resposta”. Tudo que a IA aprendeu do histórico entra primeiro em Revisar.</span></div>
+            <div id="responseEditorForm" class="response-editor-form" hidden>
+              <input id="responseLibraryId" type="hidden">
+              <div class="response-editor-head"><div><span id="responseEditorOrigin" class="response-origin-badge">MANUAL</span><h3 id="responseEditorHeading">Nova resposta</h3></div><div id="responseEditorEvidence" class="hint"></div></div>
+              <div class="response-primary-fields">
+                <label>Título da resposta<input id="responseLibraryTitle" placeholder="Ex.: Planos e valores"></label>
+                <label>Atalho interno<input id="responseLibraryShortcut" placeholder="ex.: orçamento"></label>
+                <label class="response-library-wide">O que o cliente pode falar <input id="responseLibraryTriggers" placeholder="preço, valor, orçamento, quanto custa"><small>Inclua variações reais. A IA pode aprender novas formas de perguntar sem alterar sua resposta aprovada.</small></label>
+              </div>
+              <label class="response-message-label">Resposta atual<textarea id="responseLibraryText" rows="6" placeholder="Escreva aqui a informação atual e correta que pode ser enviada."></textarea></label>
+              <div class="response-status-strip">
+                <label>Revisão<select id="responseLibraryReviewStatus"><option value="pending">🟠 Precisa revisar</option><option value="approved">✅ Aprovada / atual</option><option value="archived">⛔ Arquivada / antiga</option></select></label>
+                <label>Status<select id="responseLibraryEnabled"><option value="true">Ativa</option><option value="false">Desativada</option></select></label>
+                <label class="switch-row response-auto-switch"><input id="responseLibraryAutoUse" type="checkbox"><span><b>Enviar automaticamente</b> quando reconhecer os gatilhos</span></label>
+              </div>
+              <div class="response-media-box"><div><b>📎 Mídia</b><small>Opcional. Imagem, áudio, vídeo ou documento.</small></div><label>Tipo<select id="responseLibraryType"><option value="text">Somente texto</option><option value="image">Imagem</option><option value="audio">Áudio</option><option value="video">Vídeo</option><option value="document">Documento</option></select></label><label>Adicionar / substituir<input id="responseLibraryFile" type="file" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"></label><div id="responseLibraryCurrentFile" class="hint">Sem mídia anexada.</div><label class="switch-row compact"><input id="responseLibraryRemoveFile" type="checkbox"><span>Remover mídia atual</span></label><label class="switch-row compact"><input id="responseLibraryPTT" type="checkbox" checked><span>Áudio como mensagem de voz</span></label></div>
+              <details class="response-advanced"><summary>⚙ Ajustes avançados de envio e correspondência</summary>
+                <div class="response-library-grid">
+                  <label>Matching<select id="responseLibraryMatchMode"><option value="smart">Inteligente</option><option value="contains_any">Qualquer gatilho</option><option value="contains_all">Todos os gatilhos</option><option value="exact">Texto exato</option></select></label>
+                  <label>Sensibilidade (%)<input id="responseLibraryThreshold" type="number" min="55" max="98" value="76"></label>
+                  <label>Prioridade<input id="responseLibraryPriority" type="number" min="1" max="999" value="35"><small>Menor = testa primeiro.</small></label>
+                  <label>Válida desde<input id="responseLibraryValidFrom" type="datetime-local"></label>
+                  <label>Válida até<input id="responseLibraryExpiresAt" type="datetime-local"></label>
+                  <label>Delay mínimo (s)<input id="responseLibraryDelayMin" type="number" min="0" max="300" step="0.5" value="0"></label>
+                  <label>Delay máximo (s)<input id="responseLibraryDelayMax" type="number" min="0" max="300" step="0.5" value="0"></label>
+                  <label>Não repetir por (h)<input id="responseLibraryCooldown" type="number" min="0" max="168" step="0.5" value="0"></label>
+                </div>
+              </details>
+              <div class="response-editor-footer"><div class="hint" id="responseEditorSafety">A IA não sobrescreve respostas que você editar e aprovar.</div><div class="chat-actions"><button id="deleteResponseLibraryBtn" type="button" class="danger-mini" style="display:none">Excluir</button><button id="saveResponseLibraryBtn" type="button" class="primary-action">💾 Salvar resposta</button></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <details class="settings-card flow-test-card compact-test">
+        <summary>🧪 Testar uma mensagem antes de salvar</summary>
+        <p class="hint">Digite uma mensagem como se fosse o cliente e veja qual automação dispararia.</p>
+        <div class="flow-grid four"><label>Mensagem do cliente<input id="flowTestText" placeholder="Ex.: quanto custa esse serviço?"></label><label>Etapa/status<input id="flowTestStatus" placeholder="novo_lead"></label><label>Setor<input id="flowTestDepartment" placeholder="comercial"></label><label>Horário<select id="flowTestHours"><option value="any">Agora / automático</option><option value="inside">Dentro do horário</option><option value="outside">Fora do horário</option></select></label></div><div class="chat-actions"><button id="testFlowsBtn">▶ Testar agora</button><span id="flowTestResult" class="hint">Nenhum teste executado.</span></div>
+      </details>
+
+      <div id="flowsList"></div>
+      <div class="sticky-save"><button id="saveFlowsBtn">💾 Salvar automações</button></div>
+    </section>
+
+    <section id="tab-ia" class="tab-content">
+      <h2>Inteligência Artificial (Google Gemini)</h2>
+      <div class="settings-card">
+        <label class="switch-row"><input type="checkbox" id="aiEnabledToggle" /><span>Ativar inteligência do agente</span></label><label>Modo operacional da IA</label><select id="aiModeSelect"><option value="observacao">👁 Observação — aprende e classifica, não sugere nem envia</option><option value="assistido">🤝 Assistido — sugere respostas para aprovação humana</option><option value="autonomo">🤖 Autônomo — responde sozinho dentro das regras</option></select><p class="hint">Recomendação para iniciar: Assistido. Depois de validar o comportamento, mude para Autônomo.</p>
+        <label class="switch-row">
+          <input type="checkbox" id="autoProfilingToggle" />
+          <span>Atualizar perfil do cliente automaticamente com Gemini</span>
+        </label>
+        <label class="switch-row">
+          <input type="checkbox" id="autoRoutingToggle" />
+          <span>Transferir automaticamente para o setor/equipe mais adequado</span>
+        </label>
+        <label class="switch-row">
+          <input type="checkbox" id="continuousLearningToggle" />
+          <span>Aprendizado contínuo com novas conversas</span>
+        </label>
+        <p id="continuousLearningStatus" class="hint">Aguardando novas mensagens para aprender.</p>
+        <div class="learning-observability">
+          <div class="crm-header"><div><b>📚 Observabilidade do aprendizado</b><small class="hint">O que o Alone.AI aprendeu, quando atualizou e se houve falha.</small></div><button id="refreshLearningStatusBtn" type="button">↻</button></div>
+          <div id="learningMetrics" class="health-grid"></div>
+          <div id="learningRecent" class="management-list"></div>
+        </div>
+        <div class="response-library-grid"><label>Delay geral mínimo do agente (segundos)<input id="agentDelayMin" type="number" min="0" max="60" step="0.5" value="1.2"></label><label>Delay geral máximo do agente (segundos)<input id="agentDelayMax" type="number" min="0" max="60" step="0.5" value="3.4"><small>Aplicado antes de respostas da IA. Use valores iguais para delay fixo.</small></label></div>
+        <label>Chave da API do Gemini</label>
+        <input type="password" id="geminiKeyInput" placeholder="Cole aqui sua chave (console.cloud.google.com ou aistudio.google.com)" />
+        <p class="hint">A chave fica salva só no seu computador, dentro da pasta do projeto. Nunca é enviada pra mais ninguém.</p>
+        <div class="chat-actions"><button id="saveAIBtn">💾 Salvar configuração de IA</button><button id="clearGeminiKeyBtn" type="button" class="danger-mini">Remover chave Gemini</button></div>
+      </div>
+
+      <div class="settings-card bootstrap-card">
+        <div class="bootstrap-head"><div><h3>Preparação automática pós-QR</h3><p>Ao conectar o WhatsApp, o sistema importa o histórico disponível, aprende a operação da empresa e perfila os clientes antes de liberar as respostas da IA.</p></div><span id="bootstrapReadyBadge" class="bootstrap-badge waiting">Preparando</span></div>
+        <div class="bootstrap-steps">
+          <div class="bootstrap-step" data-step="import"><b>1</b><span>Importar histórico</span></div>
+          <div class="bootstrap-step" data-step="company"><b>2</b><span>Entender a empresa</span></div>
+          <div class="bootstrap-step" data-step="customers"><b>3</b><span>Perfilar clientes</span></div>
+          <div class="bootstrap-step" data-step="ready"><b>4</b><span>IA pronta</span></div>
+        </div>
+        <div id="bootstrapLivePanel" class="bootstrap-live-panel">
+          <div class="bootstrap-live-main"><span id="bootstrapLiveDot" class="bootstrap-live-dot"></span><div><strong id="bootstrapStateTitle">Aguardando</strong><small id="bootstrapStateSubtitle">A preparação ainda não começou.</small></div></div>
+          <div class="bootstrap-live-side"><b id="bootstrapPercentText">0%</b><small id="bootstrapUpdatedAt">Sem atividade recente</small></div>
+        </div>
+        <div class="bootstrap-progress"><div id="bootstrapProgressBar"></div></div>
+        <div class="bootstrap-metrics">
+          <div><b id="bootstrapMessages">0</b><span>amostra / disponíveis</span></div>
+          <div><b id="bootstrapContacts">0</b><span>contatos</span></div>
+          <div><b id="bootstrapProfiled">0 / 0</b><span>perfis prioritários</span></div>
+          <div><b id="bootstrapAutomations">0 / 0</b><span>regras / respostas prontas</span></div>
+        </div>
+        <p>Status atual: <strong id="scanStatus">-</strong></p>
+        <p id="bootstrapDetail" class="hint"></p>
+        <div id="bootstrapEventLog" class="bootstrap-event-log" aria-live="polite"></div>
+        <div class="bootstrap-actions"><button id="runScanBtn">▶ Iniciar / refazer preparação</button><button id="pauseScanBtn">⏸ Pausar</button><button id="resumeScanBtn" class="primary-action">▶ Continuar</button><button id="cancelScanBtn" class="danger-mini">✕ Cancelar</button></div>
+        <div id="styleProfileBox" class="style-profile"></div>
+        <h3>Memória operacional aprendida</h3>
+        <div id="businessProfileBox" class="style-profile"></div>
+      </div>
+      <div class="settings-card wide-card">
+        <div class="crm-header"><div><h3>Conhecimento da IA</h3><p class="hint">Controle o que é verdade atual. Fatos aprendidos do WhatsApp entram como <b>Aprendido</b>; você pode revisar, oficializar, expirar ou bloquear. A IA nunca usa itens em Revisar/Expirado como fato atual.</p></div><button id="refreshKnowledgeBtn">↻ Atualizar</button></div>
+        <div id="knowledgeSummary" class="metrics-row"></div>
+        <div class="knowledge-form"><label>Categoria<input id="knowledgeCategory" placeholder="produtos, serviços, horários, políticas..."></label><label>Título<input id="knowledgeTitle" placeholder="Produto, serviço ou política"></label></div>
+        <label>Conteúdo atual<textarea id="knowledgeContent" rows="4" placeholder="Informação que a IA poderá usar nas respostas."></textarea></label>
+        <div class="knowledge-form"><label>Palavras-chave<input id="knowledgeKeywords" placeholder="preço, orçamento, entrega, agendamento"></label><label>Status<select id="knowledgeStatus"><option value="official">Oficial</option><option value="reviewed">Revisado</option><option value="learned">Aprendido</option><option value="review">Revisar</option><option value="expired">Expirado</option></select></label></div>
+        <div class="knowledge-form"><label>Prioridade (0–100)<input id="knowledgePriority" type="number" min="0" max="100" value="100"></label><label>Válido desde<input id="knowledgeValidFrom" type="datetime-local"></label></div>
+        <div class="knowledge-form"><label>Válido até<input id="knowledgeExpiresAt" type="datetime-local"></label><label>Revisar após<input id="knowledgeReviewAfter" type="datetime-local"></label></div>
+        <label class="toggle-line"><input id="knowledgeLocked" type="checkbox" checked> <span>🔒 Proteger contra alterações automáticas da IA</span></label>
+        <p class="hint">Prioridade: Oficial &gt; Revisado &gt; Aprendido. Ao editar manualmente um item, ele fica protegido. Para promoção/oferta com prazo, defina “Válido até”.</p>
+        <div class="chat-actions"><button id="saveKnowledgeBtn">+ Adicionar conhecimento</button><button id="previewKnowledgeBtn">👁 Testar resposta antes de salvar</button><button id="clearKnowledgeFormBtn">Limpar</button></div>
+        <div id="knowledgeList" class="knowledge-list"></div><div class="knowledge-gaps-box"><div class="crm-header"><h4>⚠️ Lacunas detectadas pela IA</h4><button id="refreshKnowledgeGapsBtn">↻</button></div><p class="hint">Assuntos que clientes perguntaram e que não estavam sustentados pela base/histórico.</p><div id="knowledgeGapsList"></div></div>
+      </div>
+    </section>
+
+
+    <section id="tab-gestao" class="tab-content">
+      <div class="crm-header"><div><h2>Gestão comercial</h2><p class="hint">Pipeline, tarefas, agenda, respostas rápidas e inteligência do atendimento.</p></div><button id="refreshManagementBtn">↻ Atualizar</button></div>
+      <div id="managementMetrics" class="metrics-row"></div><div id="managementSegmentPanel" class="settings-card wide-card segment-panel" style="display:none"></div>
+      <div class="settings-card wide-card proactive-card">
+        <div class="crm-header"><div><h3>⚡ Proatividade comercial</h3><p class="hint">O agente acompanha silêncio após conversas comerciais e pode fazer follow-up automaticamente. Mensagens, tempo, score, tentativas e intervalo são editáveis.</p></div><div class="chat-actions"><button id="saveProactiveSettingsBtn">💾 Salvar</button><button id="processProactiveNowBtn">▶ Processar elegível agora</button></div></div>
+        <div id="proactiveStatus" class="health-grid"></div>
+        <div class="flow-checks"><label class="switch-row compact"><input id="proactiveEnabled" type="checkbox"><span>Ativar proatividade automática</span></label></div>
+        <div class="flow-grid four"><label>Intervalo global mínimo (s)<input id="proactiveGlobalInterval" type="number" min="10" max="3600"></label><label>Limite diário<input id="proactiveDailyLimit" type="number" min="1" max="1000"></label><label>Janela por cliente (dias)<input id="commercialContactWindowDays" type="number" min="1" max="30"></label><label>Máx. iniciativas IA/cliente<input id="commercialContactLimit" type="number" min="1" max="50"></label></div><p class="hint">Esse limite conta apenas mensagens iniciadas automaticamente por proatividade/jornada. Respostas normais em conversa ativa não entram na conta.</p>
+        <div id="proactiveScenarios" class="proactive-scenarios"></div>
+      </div>
+      <div class="management-grid">
+        <div class="settings-card"><h3>Inteligência comercial</h3><div id="commercialIntelligence" class="style-profile">Clique em analisar para gerar um diagnóstico com Gemini.</div><button id="runCommercialIntelligenceBtn">🧠 Analisar operação</button></div><div class="settings-card"><h3>Uso da IA</h3><div id="aiRuntimeMetrics" class="health-grid"></div><p class="hint">Chamadas, falhas, tokens e latência aproximada do Gemini nesta execução.</p></div>
+        <div class="settings-card"><h3>Alertas</h3><div id="abandonedLeads"></div></div>
+      </div>
+      <div class="management-grid">
+        <div class="settings-card"><h3>Tarefas e lembretes</h3><label>Título<input id="taskTitle" placeholder="Ex.: Retornar proposta"></label><div class="form-row"><label>Data/hora<input id="taskDue" type="datetime-local"></label><label>Prioridade<select id="taskPriority"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baixa</option></select></label></div><button id="createTaskBtn">+ Criar tarefa</button><div id="tasksList" class="management-list"></div></div>
+        <div class="settings-card"><h3>Agenda</h3><label>Título<input id="eventTitle" placeholder="Ex.: Reunião, consulta ou entrega"></label><div class="form-row"><label>Início<input id="eventStart" type="datetime-local"></label><label>Tipo<select id="eventType"><option value="consulta">Consulta / atendimento</option><option value="demonstracao">Demonstração / visita</option><option value="retorno">Retorno</option><option value="reuniao">Reunião</option><option value="entrega">Entrega / retirada</option><option value="geral">Geral</option></select></label></div><button id="createEventBtn">+ Agendar</button><div id="calendarList" class="management-list"></div></div>
+      </div>
+      <div class="settings-card wide-card"><div class="crm-header"><h3>Respostas rápidas e mídias</h3><button id="cleanupQuickMediaBtn" type="button">🧹 Limpar mídias órfãs</button></div><div class="quick-form"><label>Atalho<input id="quickShortcut" placeholder="orcamento"></label><label>Título<input id="quickTitle" placeholder="Produto, serviço ou política"></label><label>Tipo<select id="quickType"><option value="text">Texto</option><option value="image">Imagem</option><option value="audio">Áudio</option><option value="video">Vídeo</option><option value="document">Documento</option></select></label></div><label>Texto/legenda<textarea id="quickText" rows="3"></textarea></label><label>Arquivo (opcional para texto)<input id="quickFile" type="file" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"></label><label class="switch-row compact"><input id="quickPTT" type="checkbox" checked><span>Se for áudio, enviar como mensagem de voz</span></label><button id="createQuickReplyBtn">+ Salvar resposta rápida</button><div id="quickRepliesList" class="management-list"></div></div>
+      <div class="management-grid">
+        <div class="settings-card"><div class="crm-header"><div><h3>Saúde do sistema</h3><small id="healthUpdatedAt" class="hint">Aguardando atualização…</small></div><button id="refreshHealthBtn">↻ Atualizar</button></div><div id="healthPanel" class="health-grid"></div><pre id="healthDetails" class="health-details">Sem erros técnicos ativos.</pre></div>
+        <div class="settings-card"><div class="crm-header"><h3>Fila e retry</h3><button id="processRetryBtn">Tentar agora</button></div><div id="retryMetrics"></div><div id="retryList" class="management-list"></div></div>
+      </div>
+      <div class="management-grid">
+        <div class="settings-card"><div class="crm-header"><h3>Backups</h3><button id="createBackupBtn">💾 Backup agora</button></div><div id="backupList" class="management-list"></div></div>
+        <div class="settings-card"><div class="crm-header"><h3>Auditoria da equipe</h3><button id="refreshAuditBtn">↻</button></div><div id="auditList" class="audit-list"></div></div>
+      </div>
+      <div class="settings-card"><h3>Equipe — visão operacional</h3><div id="teamPerformanceList" class="management-list"></div></div><div class="settings-card"><h3>Exportação</h3><p class="hint">Exporta contatos, estágio, score, negociação, origem, responsável e última interação.</p><button id="exportContactsBtn">⬇ Exportar CRM em CSV</button></div>
+    </section>
+
+    <section id="tab-equipe" class="tab-content">
+      <h2>Equipe / Atendentes</h2>
+      <div id="agentsList"></div>
+      <button id="addAgentBtn">+ Adicionar atendente</button>
+    </section>
+
+    <section id="tab-config" class="tab-content">
+      <h2>Configurações</h2>
+      <div class="settings-card">
+        <h3>Configurações gerais</h3>
+        <label>Nome da empresa atendida pela IA</label>
+        <input type="text" id="gymNameInput" />
+        <label>Segmento / perfil do negócio</label>
+        <select id="businessTypeInput">
+          <option value="general">Geral / qualquer empresa</option>
+          <option value="services">Serviços</option>
+          <option value="retail">Varejo / comércio</option>
+          <option value="health">Saúde / clínica</option>
+          <option value="fitness">Fitness / academia</option>
+          <option value="education">Educação</option>
+          <option value="professional">Profissional / consultoria</option>
+          <option value="hospitality">Hospitalidade / alimentação</option>
+          <option value="other">Outro</option>
+        </select>
+        <label>Descrição curta da operação</label>
+        <textarea id="businessDescriptionInput" rows="3" placeholder="Ex.: clínica odontológica que atende particulares e convênios; vende consultas e tratamentos por agendamento."></textarea>
+        <p class="hint">Isso orienta a linguagem e a classificação da IA. O Alone.AI continua aprendendo a operação pelo WhatsApp e pela Base Oficial.</p>
+        <label>Resumo do horário usado pelo agente</label>
+        <input type="text" id="businessHoursInput" readonly />
+        <p class="hint">Este resumo é gerado automaticamente pelos horários abaixo. Edite os campos de hora para alterar o funcionamento do agente.</p>
+        <label>Horários usados pela automação</label>
+        <div class="schedule-grid">
+          <span>Seg–Sex manhã</span><input type="time" id="weekdayMorningStart"><input type="time" id="weekdayMorningEnd">
+          <span>Seg–Sex tarde/noite</span><input type="time" id="weekdayAfternoonStart"><input type="time" id="weekdayAfternoonEnd">
+          <span>Sábado</span><input type="time" id="saturdayStart"><input type="time" id="saturdayEnd">
+          <span>Domingo</span><input type="time" id="sundayStart"><input type="time" id="sundayEnd">
+        </div>
+        <label>Fuso horário da operação</label>
+        <select id="businessTimezoneInput"><option value="America/Sao_Paulo">Brasília / Paraná (America/Sao_Paulo)</option><option value="America/Manaus">Manaus (America/Manaus)</option><option value="America/Rio_Branco">Acre (America/Rio_Branco)</option><option value="America/Noronha">Fernando de Noronha (America/Noronha)</option></select>
+        <p id="businessTimeStatus" class="hint">Verificando horário operacional...</p>
+        <p class="hint">Esses horários controlam quando o chatbot responde automaticamente. Feriados continuam sendo um ajuste manual por enquanto.</p>
+        <label>Identidade visual</label>
+        <input type="hidden" id="themeColorInput" value="#FF6A00" />
+        <p class="hint">Obsidian Dark Orange · identidade fixa do Alone.AI.</p>
+        <button id="saveConfigBtn">💾 Salvar</button>
+      </div>
+
+
+      <div class="settings-card">
+        <h3>Ajuda e tutoriais</h3>
+        <p class="hint">Os tutoriais aparecem na primeira vez que cada área é aberta. Você pode ocultar cada um individualmente e reativá-los aqui.</p>
+        <div class="tutorial-settings-actions">
+          <button id="startMainTutorialBtn">▶ Ver tutorial geral</button>
+          <button id="resetTutorialsBtn">↻ Mostrar tutoriais novamente</button>
+        </div>
+      </div>
+
+    </section>
+
+    <section id="tab-conexao" class="tab-content">
+      <div class="crm-header connection-page-head">
+        <div>
+          <h2>Conexão do WhatsApp</h2>
+          <p class="hint">Conecte o número que o Alone usará para ler o histórico disponível, atender clientes e executar a preparação automática da IA.</p>
+        </div>
+        <div id="connectionPageStatus" class="connection-page-status">Verificando…</div>
+      </div>
+      <div class="connection-page-grid">
+        <div class="settings-card connection-primary-card">
+          <div class="connection-hero-icon">◫</div>
+          <h3 id="connectionPageTitle">WhatsApp desconectado</h3>
+          <p id="connectionPageHint" class="hint">Clique abaixo para iniciar uma nova conexão e gerar o QR Code.</p>
+          <div id="qrBox" class="connection-qr-box"></div>
+          <div class="connection-actions">
+            <button id="connectWhatsAppBtn">Conectar / Gerar QR</button>
+            <button id="disconnectWhatsAppBtn" class="danger-btn" style="display:none">Desconectar WhatsApp</button>
+          </div>
+        </div>
+        <div class="settings-card connection-guide-card">
+          <h3>Como conectar</h3>
+          <div class="connection-step"><b>1</b><span>Clique em <strong>Conectar / Gerar QR</strong>.</span></div>
+          <div class="connection-step"><b>2</b><span>No celular, abra WhatsApp → Dispositivos conectados → Conectar dispositivo.</span></div>
+          <div class="connection-step"><b>3</b><span>Escaneie o QR exibido aqui.</span></div>
+          <div class="connection-step"><b>4</b><span>Depois da conexão, a preparação da IA poderá usar o histórico sincronizado.</span></div>
+          <p class="hint connection-security-note">O Alone só inicia a preparação quando a conexão estiver realmente aberta e houver histórico utilizável.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+  <div id="tutorialOverlay" class="tutorial-overlay" style="display:none" aria-hidden="true">
+    <div class="tutorial-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <div class="tutorial-top">
+        <span id="tutorialStepLabel" class="tutorial-step-label">Tutorial</span>
+        <button id="tutorialCloseBtn" class="tutorial-close" aria-label="Fechar tutorial">✕</button>
+      </div>
+      <h2 id="tutorialTitle"></h2>
+      <p id="tutorialText" class="tutorial-text"></p>
+      <div id="tutorialTips" class="tutorial-tips"></div>
+      <label class="tutorial-never-show"><input type="checkbox" id="tutorialDontShowAgain"> <span>Não mostrar tutoriais automaticamente novamente</span></label>
+      <div class="tutorial-actions">
+        <button id="tutorialSkipBtn" class="tutorial-secondary">Pular tutorial</button>
+        <div class="tutorial-nav-actions">
+          <button id="tutorialBackBtn" class="tutorial-secondary">← Voltar</button>
+          <button id="tutorialNextBtn">Próximo →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="searchOverlay" class="search-overlay" style="display:none"><div class="search-panel"><div class="crm-header"><h3>Busca global</h3><button id="closeSearchBtn">✕</button></div><div id="searchResults"></div></div></div>
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="app.js"></script>
+</body>
+</html>

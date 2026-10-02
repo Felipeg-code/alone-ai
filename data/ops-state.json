@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 5,
+  "nextAuditId": 1,
+  "nextKnowledgeId": 1,
+  "nextRetryId": 1,
+  "auditLogs": [],
+  "knowledgeBase": [],
+  "knowledgeGaps": [],
+  "journeyTemplates": [
+    {
+      "id": "lead_academia",
+      "name": "Jornada comercial",
+      "description": "Da primeira abordagem ao pós-venda/acompanhamento",
+      "stages": [
+        "contato_inicial",
+        "apresentacao_plano",
+        "fechamento",
+        "agendamento_avaliacao",
+        "pos_avaliacao",
+        "primeiro_treino",
+        "acompanhamento"
+      ],
+      "active": true
+    },
+    {
+      "id": "aula_experimental",
+      "name": "Agendamento e conversão",
+      "description": "Contato, agendamento, experiência inicial e conversão",
+      "stages": [
+        "contato_inicial",
+        "agendamento_avaliacao",
+        "primeiro_treino",
+        "fechamento",
+        "acompanhamento"
+      ],
+      "active": true
+    },
+    {
+      "id": "cancelado",
+      "name": "Cancelamento e reativação",
+      "description": "Cancelamento, pós-cancelamento e retorno",
+      "stages": [
+        "cancelamento",
+        "pos_cancelamento",
+        "reativacao"
+      ],
+      "active": true
+    }
+  ],
+  "retryQueue": [],
+  "systemEvents": [],
+  "feedbackExamples": [],
+  "lastBackupAt": null,
+  "lastBackupPath": null,
+  "outboundApprovals": [],
+  "nextApprovalId": 1
+}

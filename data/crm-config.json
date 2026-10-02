@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "global": {
+    "stages": [
+      {
+        "id": "contato_inicial",
+        "label": "Contato inicial",
+        "enabled": true,
+        "order": 1
+      },
+      {
+        "id": "apresentacao_plano",
+        "label": "Apresentação da oferta",
+        "enabled": true,
+        "order": 2
+      },
+      {
+        "id": "fechamento",
+        "label": "Fechamento / conversão",
+        "enabled": true,
+        "order": 3
+      },
+      {
+        "id": "agendamento_avaliacao",
+        "label": "Agendamento",
+        "enabled": true,
+        "order": 4
+      },
+      {
+        "id": "pos_avaliacao",
+        "label": "Pós-atendimento",
+        "enabled": true,
+        "order": 5
+      },
+      {
+        "id": "primeiro_treino",
+        "label": "Início / onboarding",
+        "enabled": true,
+        "order": 6
+      },
+      {
+        "id": "acompanhamento",
+        "label": "Acompanhamento",
+        "enabled": true,
+        "order": 7
+      },
+      {
+        "id": "cancelamento",
+        "label": "Cancelamento",
+        "enabled": true,
+        "order": 8
+      },
+      {
+        "id": "pos_cancelamento",
+        "label": "Pós-cancelamento",
+        "enabled": true,
+        "order": 9
+      },
+      {
+        "id": "reativacao",
+        "label": "Reativação",
+        "enabled": true,
+        "order": 10
+      }
+    ],
+    "cardFields": [
+      "phone",
+      "interest",
+      "lead_score",
+      "deal_value",
+      "tags",
+      "department",
+      "assigned_agent"
+    ],
+    "customFields": [],
+    "suggestedTags": [],
+    "defaultSort": "updated_desc",
+    "cardDensity": "comfortable"
+  },
+  "users": {}
+}

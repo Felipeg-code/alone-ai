@@ -1,0 +1,47 @@
+{
+  "name": "alone-ai-agent",
+  "version": "7.4.33",
+  "description": "Alone.AI v7.4.33 — Risk Control adaptativo, recuperação gradual, classificação fina de transporte e preflight atômico",
+  "main": "server/index.js",
+  "bin": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "bundle": "esbuild server/index.js --bundle --platform=node --target=node22 --format=cjs --outfile=dist/bundle.cjs",
+    "build:exe": "npm run bundle && pkg dist/bundle.cjs --targets node22-win-x64 --output dist/Alone-Agent.exe",
+    "build:exe-test-linux": "npm run bundle && pkg dist/bundle.cjs --targets node22-linux-x64 --output dist/alone-agent-linux",
+    "smoke": "node ../scripts/smoke-test-v744.js && node ../scripts/smoke-test-v745.js && node ../scripts/smoke-test-v748.js && node ../scripts/smoke-test-v749.js && node ../scripts/smoke-test-campaigns-v749.js && node ../scripts/smoke-test-v7410.js && node ../scripts/smoke-test-v7415.js && node ../scripts/smoke-test-v7416.js && node ../scripts/smoke-test-v7417.js && node ../scripts/smoke-test-v7419.js && node ../scripts/smoke-test-v7420.js && node ../scripts/smoke-test-v7422.js && node ../scripts/e2e-proactivity-v7423.js && node ../scripts/smoke-test-v7424.js && node ../scripts/smoke-test-v7425.js && node ../scripts/smoke-test-v7427.js && node ../scripts/smoke-test-campaign-specific-v7427.js && node ../scripts/smoke-test-v7428.js && node ../scripts/smoke-test-v7429.js && node ../scripts/smoke-test-v7430.js && node ../scripts/smoke-test-v7431.js && node ../scripts/smoke-test-v7432.js && node ../scripts/smoke-test-v7433.js",
+    "smoke:v745": "node ../scripts/smoke-test-v745.js",
+    "smoke:v748": "node ../scripts/smoke-test-v748.js",
+    "smoke:v749": "node ../scripts/smoke-test-v749.js && node ../scripts/smoke-test-campaigns-v749.js",
+    "smoke:v7410": "node ../scripts/smoke-test-v7410.js",
+    "smoke:v7415": "node ../scripts/smoke-test-v7415.js",
+    "smoke:v7416": "node ../scripts/smoke-test-v7416.js",
+    "smoke:v7417": "node ../scripts/smoke-test-v7417.js",
+    "smoke:v7419": "node ../scripts/smoke-test-v7419.js",
+    "smoke:v7420": "node ../scripts/smoke-test-v7420.js",
+    "smoke:v7422": "node ../scripts/smoke-test-v7422.js",
+    "e2e:proactivity": "node ../scripts/e2e-proactivity-v7423.js",
+    "smoke:v7424": "node ../scripts/smoke-test-v7424.js",
+    "smoke:v7428": "node ../scripts/smoke-test-v7428.js",
+    "smoke:v7430": "node ../scripts/smoke-test-v7430.js && node ../scripts/smoke-test-v7431.js && node ../scripts/smoke-test-v7432.js && node ../scripts/smoke-test-v7433.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.24",
+    "dotenv": "16.4.5",
+    "express": "4.21.0",
+    "node-cron": "3.0.3",
+    "pino": "9.4.0",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "6.22.0",
+    "esbuild": "0.24.0"
+  },
+  "pkg": {
+    "scripts": "dist/bundle.cjs"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "boasVindas": {
+    "label": "Primeira mensagem de um novo contato",
+    "trigger": "primeiro_contato",
+    "setStatus": "novo_lead",
+    "responses": [
+      {
+        "type": "text",
+        "text": "Oi! Aqui é da {company_name} 🧡 Que bom ter você por aqui. Me conta o que você está procurando que eu te ajudo."
+      }
+    ],
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "ofertaValores": {
+    "label": "Perguntou sobre preço, orçamento, produto, serviço ou plano",
+    "keywords": [
+      "preço",
+      "preco",
+      "valor",
+      "quanto custa",
+      "quanto fica",
+      "orçamento",
+      "orcamento",
+      "proposta",
+      "produto",
+      "serviço",
+      "servico",
+      "plano",
+      "pacote"
+    ],
+    "setStatus": "interessado",
+    "responses": [
+      {
+        "type": "text",
+        "text": "Posso te explicar as opções e valores por aqui. Me conta rapidinho o que você precisa para eu direcionar melhor."
+      }
+    ],
+    "routeDepartment": "comercial",
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "horarioFuncionamento": {
+    "label": "Perguntou sobre horário de funcionamento",
+    "keywords": [
+      "horário",
+      "horario",
+      "que horas",
+      "abre",
+      "fecha",
+      "funciona",
+      "atendimento"
+    ],
+    "responses": [
+      {
+        "type": "text",
+        "text": "Nosso horário atual é: {business_hours}."
+      }
+    ],
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "localizacao": {
+    "label": "Perguntou onde fica / endereço",
+    "keywords": [
+      "endereço",
+      "endereco",
+      "localização",
+      "localizacao",
+      "onde fica",
+      "onde vocês ficam",
+      "onde voces ficam"
+    ],
+    "responses": [
+      {
+        "type": "text",
+        "text": "Posso te passar a localização certinha. Se ela não estiver na nossa base oficial, vou pedir para a equipe confirmar antes de te informar."
+      }
+    ],
+    "routeDepartment": "atendimento",
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "agendamento": {
+    "label": "Quer agendar, visitar, marcar atendimento ou demonstração",
+    "keywords": [
+      "agendar",
+      "agenda",
+      "marcar horário",
+      "marcar horario",
+      "consulta",
+      "reunião",
+      "reuniao",
+      "visita",
+      "demonstração",
+      "demonstracao",
+      "experimental"
+    ],
+    "setStatus": "interessado",
+    "responses": [
+      {
+        "type": "text",
+        "text": "Claro. Qual o melhor dia e horário para você?"
+      }
+    ],
+    "routeDepartment": "atendimento",
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "pagamento": {
+    "label": "Cliente mencionou pagamento, boleto, PIX, fatura ou cobrança",
+    "keywords": [
+      "boleto",
+      "pagamento",
+      "pix",
+      "fatura",
+      "cobrança",
+      "cobranca",
+      "atrasado",
+      "2ª via",
+      "2a via",
+      "segunda via"
+    ],
+    "setStatus": "pendente_pagamento",
+    "responses": [
+      {
+        "type": "text",
+        "text": "Já te ajudo com isso. Vou verificar o contexto do pagamento para orientar corretamente."
+      }
+    ],
+    "routeDepartment": "financeiro",
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "cancelamento": {
+    "label": "Cliente quer cancelar, encerrar ou desistir",
+    "keywords": [
+      "cancelar",
+      "cancelamento",
+      "encerrar",
+      "rescindir",
+      "quero sair",
+      "quero desistir"
+    ],
+    "responses": [
+      {
+        "type": "text",
+        "text": "Entendi. Posso registrar o motivo e encaminhar para o setor responsável continuar esse atendimento com você."
+      }
+    ],
+    "routeDepartment": "retencao",
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "agradecimento": {
+    "label": "Cliente agradeceu / se despediu",
+    "keywords": [
+      "obrigado",
+      "obrigada",
+      "valeu",
+      "tmj",
+      "falou",
+      "até mais",
+      "ate mais"
+    ],
+    "responses": [
+      {
+        "type": "text",
+        "text": "Perfeito! Qualquer coisa, é só chamar por aqui 🧡"
+      }
+    ],
+    "execution": "ai_first",
+    "allowFixedSend": false
+  },
+  "foraDoHorario": {
+    "label": "Mensagem recebida fora do horário comercial",
+    "isFallbackOutOfHours": true,
+    "responses": [
+      {
+        "type": "text",
+        "text": "Recebemos sua mensagem! No momento estamos fora do horário de atendimento. Assim que abrirmos, seguimos por aqui. Horários: {business_hours}"
+      }
+    ],
+    "allowFixedSend": true
+  },
+  "reativacaoInativos": {
+    "label": "Campanha automática — reativação de clientes inativos",
+    "isCampaign": true,
+    "responses": [
+      {
+        "type": "text",
+        "text": "Oi! Faz um tempo desde nosso último contato com a {company_name}. Se surgiu uma nova necessidade ou quiser retomar uma conversa, estamos por aqui."
+      }
+    ],
+    "allowFixedSend": true
+  },
+  "lembretePagamento": {
+    "label": "Campanha automática — lembrete de pagamento próximo do vencimento",
+    "isCampaign": true,
+    "responses": [
+      {
+        "type": "text",
+        "text": "Oi! Passando para lembrar que existe um pagamento próximo do vencimento. Se precisar confirmar valor, forma de pagamento ou segunda via, é só chamar por aqui."
+      }
+    ],
+    "allowFixedSend": true
+  },
+  "fallbackPadrao": {
+    "label": "Nenhuma palavra-chave reconhecida (resposta padrão)",
+    "isDefaultFallback": true,
+    "responses": [
+      {
+        "type": "text",
+        "text": "Recebi sua mensagem! Me conta rapidinho o que você precisa e eu te ajudo a seguir por aqui."
+      }
+    ],
+    "execution": "ai_first",
+    "allowFixedSend": false
+  }
+}

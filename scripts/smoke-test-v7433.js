@@ -1,0 +1,25 @@
+const fs=require('fs');const path=require('path');
+const root=path.resolve(__dirname,'../codigo-fonte-dev');
+const safety=require(path.join(root,'server/safety-engine'));
+function assert(c,m){if(!c)throw new Error(m);}
+assert(safety.classifyTransportError(Object.assign(new Error('client_too_old'),{status:405})).kind==='compatibility','405 client_too_old não pode virar ban');
+assert(safety.classifyTransportError(Object.assign(new Error('Too Many Requests'),{status:429})).kind==='rate_limit','429 deve ser rate_limit');
+assert(safety.classifyTransportError(Object.assign(new Error('logged out'),{status:401})).kind==='auth','401/logged out deve ser auth');
+assert(safety.classifyTransportError(Object.assign(new Error('account restricted'),{status:403})).kind==='restriction','403/restricted deve ser restrição');
+const settings=fs.readFileSync(path.join(root,'server/settings.js'),'utf8');
+assert(settings.includes('safetyRecoveryProbationHours'),'deve existir recuperação gradual');
+assert(settings.includes('safetyReconnectStormLimit'),'deve existir detector de reconnect storm');
+const wa=fs.readFileSync(path.join(root,'server/whatsapp.js'),'utf8');
+assert(wa.includes('fetchLatestBaileysVersion'),'deve resolver versão compatível do Baileys quando disponível');
+assert(wa.includes("whatsapp_connection_closed"),'deve auditar encerramentos de conexão');
+assert(wa.includes("connectionStatus='limitado'"),'rate limit deve pausar reconexão agressiva');
+const pro=fs.readFileSync(path.join(root,'server/proactivity.js'),'utf8');
+const prospect=fs.readFileSync(path.join(root,'server/prospecting.js'),'utf8');
+const journey=fs.readFileSync(path.join(root,'server/journey.js'),'utf8');
+const scheduler=fs.readFileSync(path.join(root,'server/scheduler.js'),'utf8');
+const index=fs.readFileSync(path.join(root,'server/index.js'),'utf8');
+for(const [name,src] of [['proactivity',pro],['prospecting',prospect],['journey',journey],['scheduler',scheduler],['approval',index]])assert(src.includes('withAutomationLock'),`${name} deve usar trava global`);
+const reliability=fs.readFileSync(path.join(root,'server/reliability.js'),'utf8');
+assert(reliability.includes('retry_deferred_by_safety'),'retry deve ser adiado, não descartado, durante pausa de segurança');
+assert(reliability.includes("['permanent','auth','restriction'].includes(cls.kind)"),'rate limit não pode virar falha permanente');
+console.log('Smoke v7.4.33 OK',{fineErrorClassification:true,adaptiveRecovery:true,reconnectStormGuard:true,atomicAutomation:true,retrySafetyDefer:true});
