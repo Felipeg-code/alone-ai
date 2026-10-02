@@ -1,3 +1,13 @@
+# Alone.AI v7.5.4 — Obsidian Dark Orange 2.0
+
+- **Redesign visual completo** com um único sistema de design: 5 superfícies obsidian (`#0A0A0B` → `#26262C`), laranja `#FF6A00` como única cor de ação e semânticos fixos (verde/âmbar/vermelho/azul) em todo o sistema.
+- **Botões padronizados**: primário com gradiente laranja e brilho sutil, secundário, fantasma, perigo e sucesso — todos com hover, foco visível (anel laranja de acessibilidade) e estados consistentes.
+- **Campos e switches padronizados**: foco com anel laranja em todos os inputs; checkboxes de switch viram toggles animados.
+- **Contadores vivos na sidebar**: Inbox (não lidas), Respostas (itens para revisar) e alerta âmbar no Configurações quando o Safety Engine sai do estado saudável — atualizados a cada 8s.
+- **Sidebar com trilho laranja** no item ativo, topbar com blur, tabs/filtros unificados, badges com a mesma linguagem de cor em Safety Engine, campanhas, conexão e CRM.
+- Tokens antigos (`--bg`, `--card`, `--border`…) remapeados para a escala nova — as camadas anteriores são re-coloridas de uma vez, sem quebra de layout.
+- Zero mudança de comportamento: 28/28 testes de regressão (v7.4.4 → v7.5.4) + boot real validado.
+
 # Alone.AI v7.5.3 — Revisar: pergunta aprendida em destaque e edição no próprio card
 
 - O card de itens "Revisar" mostra **qual mensagem foi aprendida**: a pergunta capturada do histórico aparece em destaque (ex.: ❓ "quanto custa o plano?") junto dos chips de data/confiança/evidências.
