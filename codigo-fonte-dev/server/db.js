@@ -131,6 +131,13 @@ function migrate(raw) {
   state.tasks = Array.isArray(state.tasks) ? state.tasks : [];
   state.calendarEvents = Array.isArray(state.calendarEvents) ? state.calendarEvents : [];
   state.quickReplies = Array.isArray(state.quickReplies) ? state.quickReplies : [];
+  // v7.5.2 — migra o placeholder técnico antigo das respostas aprendidas para o
+  // rótulo amigável. Corrige dados já salvos em instalações reais.
+  const LEGACY_LEARNED_PLACEHOLDER='Resposta histórica disponível no corpus; revisar antes de publicar como fato';
+  const LEARNED_PLACEHOLDER='Mensagem aprendida do histórico. Revise e escreva a resposta correta antes de aprovar.';
+  for (const q of state.quickReplies) {
+    if (typeof q.text === 'string' && q.text.trim() === LEGACY_LEARNED_PLACEHOLDER) q.text = LEARNED_PLACEHOLDER;
+  }
   for (const q of state.quickReplies) {
     q.enabled = q.enabled !== false;
     q.match_mode = ['smart','contains_any','contains_all','exact'].includes(q.match_mode) ? q.match_mode : 'smart';

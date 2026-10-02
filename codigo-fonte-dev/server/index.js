@@ -52,7 +52,7 @@ const loginAttempts = new Map();
 const SESSION_IDLE_MS = 8 * 60 * 60 * 1000;
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000;
 app.use(express.json({ limit:'30mb' }));
-app.use(express.static(publicDir));
+app.use(express.static(publicDir,{setHeaders:res=>res.setHeader('Cache-Control','no-cache')}));
 
 app.get('/api/agents', (_req,res) => res.json(agents.publicAgents()));
 app.get('/api/public-config', (_req,res)=>{const s=settings.publicSettings();res.json({themeColor:s.themeColor,gymName:s.gymName,instanceId:INSTANCE_ID,appVersion:packageInfo.version});});

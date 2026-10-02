@@ -1,3 +1,10 @@
+# Alone.AI v7.5.2 — Follow-ups ilimitados e fim do texto técnico
+
+- **Proatividade com quantos follow-ups você quiser:** cada cenário (ex.: "Pediu preço e sumiu") agora tem uma sequência horizontal de tentativas — cards "Tentativa 1, 2, 3..." lado a lado, com botão ＋ para adicionar e ✕ para remover (renumeracao automática, até 20 por sanidade). O número de tentativas passa a ser a quantidade de mensagens configuradas — sem mais campo limitado a 5 nem textarea "uma por linha".
+- **"Mensagem aprendida" definitiva:** além do rótulo na interface, o próprio banco é migrado no carregamento — respostas salvas com o texto técnico antigo ("Resposta histórica disponível no corpus...") são convertidas automaticamente para o rótulo amigável. Valido para instalações reais existentes.
+- **Interface sempre atualizada:** arquivos estáticos servidos com `Cache-Control: no-cache` — o navegador revalida app.js/style.css a cada carga e você nunca fica preso numa versão antiga sem Ctrl+F5.
+- Novo `smoke-test-v752.js` com teste funcional da migração de banco legado; suíte completa v7.4.4 → v7.5.2 (26 testes).
+
 # Alone.AI v7.5.1 — Central de Respostas mais clara
 
 - Itens "Revisar" aprendidos do histórico exibem agora o rótulo **🧠 Mensagem aprendida** em vez do texto técnico antigo ("Resposta histórica disponível no corpus...").
